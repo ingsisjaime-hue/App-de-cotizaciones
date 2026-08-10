@@ -52,30 +52,16 @@
     color:var(--ink);
     background: var(--paper-3);
   }
-  .app{
-    display:flex;
-    min-height:100vh;
-    gap:0;
-  }
   ::selection{ background: var(--accent-soft); }
 
-  /* ---------- Sidebar ---------- */
-  .panel{
-    width:300px;
-    flex:0 0 300px;
-    background:var(--paper-2);
-    border-right:1px solid var(--line);
-    padding:22px 20px 40px;
-    display:flex;
-    flex-direction:column;
-    gap:22px;
-    position:sticky;
-    top:0;
-    max-height:100vh;
-    overflow-y:auto;
+  /* ---------- Top bar / tabs ---------- */
+  .topbar{
+    display:flex; align-items:center; gap:24px; padding:13px 24px;
+    background:var(--paper-2); border-bottom:1px solid var(--line);
+    position:sticky; top:0; z-index:20;
   }
   .brand{
-    display:flex; align-items:center; gap:10px;
+    display:flex; align-items:center; gap:10px; flex:none;
     font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
     font-size:1.05rem; letter-spacing:.02em;
   }
@@ -84,10 +70,25 @@
     display:flex;align-items:center;justify-content:center;color:var(--paper);
     font-family:Georgia,serif; font-weight:700; font-size:.9rem; flex:none;
   }
-  .panel h2{
-    font-size:.7rem; text-transform:uppercase; letter-spacing:.09em;
-    color:var(--ink-soft); margin:0 0 10px; font-weight:600;
+  .tabs{ display:flex; gap:4px; flex:1; }
+  .tab-btn{
+    font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border:none; border-radius:8px;
+    background:transparent; color:var(--ink-soft); cursor:pointer;
   }
+  .tab-btn:hover{ background:var(--paper); color:var(--ink); }
+  .tab-btn.active{ background:var(--accent); color:var(--paper); }
+  .tab-content{}
+  .tab-pane{ display:none; }
+  .tab-pane.active{ display:block; }
+
+  .user-box{
+    display:flex; align-items:center; gap:8px; flex:none;
+    font-size:.76rem; color:var(--ink-soft);
+  }
+  .user-box .who{ max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:right; }
+  .user-box .who strong{ color:var(--ink); display:block; font-size:.8rem; }
+
+  /* ---------- Generic form bits ---------- */
   .field{ display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
   .field label{ font-size:.72rem; color:var(--ink-soft); letter-spacing:.02em; }
   .field input, .field textarea, .field select{
@@ -125,9 +126,10 @@
   .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .btn[disabled]{ opacity:.45; cursor:not-allowed; }
 
-  .stack{ display:flex; flex-direction:column; gap:8px; }
   .row2{ display:flex; gap:8px; }
   .row2 > *{ flex:1; min-width:0; }
+  .toolbar{ display:flex; gap:8px; }
+  .toolbar .btn{ flex:1; }
 
   .quotes-list, .clients-list{ display:flex; flex-direction:column; gap:6px; max-height:220px; overflow:auto; }
   .quote-item{
@@ -182,16 +184,19 @@
   #authOverlay .modal{ max-width:360px; }
   .auth-error{ color:var(--danger); font-size:.8rem; margin:2px 0 4px; display:none; }
 
-  /* ---------- Current user box ---------- */
-  .user-box{
-    display:flex; align-items:center; justify-content:space-between; gap:8px;
-    font-size:.76rem; color:var(--ink-soft); background:var(--paper);
-    border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+  /* ---------- Admin tab ---------- */
+  .admin-layout{
+    display:grid; grid-template-columns:1fr 1fr; gap:22px;
+    max-width:1120px; margin:0 auto; padding:28px;
   }
-  .user-box .who{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .user-box .who strong{ color:var(--ink); display:block; font-size:.8rem; }
-
-  /* ---------- Admin (users & roles) ---------- */
+  .admin-block{
+    background:var(--paper); border:1px solid var(--line); border-radius:12px;
+    padding:22px 24px; box-shadow:var(--shadow);
+  }
+  .block-title{
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size:1.05rem; margin:0 0 16px; color:var(--ink);
+  }
   .admin-list{ display:flex; flex-direction:column; gap:8px; max-height:52vh; overflow:auto; }
   .admin-row{
     display:flex; align-items:center; gap:10px; border:1px solid var(--line);
@@ -211,10 +216,43 @@
   table.perm-table td{ text-align:center; padding:3px 4px; }
   table.perm-table td.mod-label{ text-align:left; color:var(--ink-soft); white-space:nowrap; }
 
-  /* ---------- Document area ---------- */
+  @media (max-width:960px){ .admin-layout{ grid-template-columns:1fr; } }
+
+  /* ---------- Estadísticas tab ---------- */
+  .stats-layout{ max-width:920px; margin:0 auto; padding:28px; }
+  .stats-summary{ display:flex; gap:16px; margin-bottom:24px; }
+  .stats-tile{ flex:1; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .stats-tile .lbl{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); }
+  .stats-tile .val{ font-size:1.5rem; font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; margin-top:4px; }
+  .stats-card{ border:1px solid var(--line); border-radius:10px; background:var(--paper); margin-bottom:10px; overflow:hidden; }
+  .stats-card-head{
+    width:100%; display:flex; align-items:center; gap:14px; padding:12px 16px; border:none;
+    background:transparent; cursor:pointer; font:inherit; text-align:left;
+  }
+  .stats-card-head:hover{ background:var(--paper-2); }
+  .stats-client{ flex:1; font-weight:700; color:var(--ink); font-size:.88rem; }
+  .stats-count{ color:var(--ink-soft); font-size:.78rem; white-space:nowrap; }
+  .stats-amt{ font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; min-width:120px; text-align:right; }
+  .stats-detail{ border-top:1px solid var(--line); padding:4px 16px; }
+  .stats-detail-row{ display:flex; gap:14px; padding:6px 0; font-size:.78rem; color:var(--ink-soft); border-bottom:1px dashed var(--line); }
+  .stats-detail-row:last-child{ border-bottom:none; }
+  .stats-detail-row span:first-child{ font-weight:600; color:var(--ink); width:100px; flex:none; }
+  .stats-detail-row span:nth-child(2){ flex:1; }
+  .stats-detail-row span:last-child{ font-variant-numeric:tabular-nums; color:var(--ink); }
+
+  /* ---------- Cotización tab ---------- */
+  .quote-layout{ display:flex; align-items:flex-start; }
+  .quote-side{
+    width:300px; flex:0 0 300px; background:var(--paper-2); border-right:1px solid var(--line);
+    padding:20px 20px 40px; display:flex; flex-direction:column; gap:4px;
+    position:sticky; top:60px; max-height:calc(100vh - 60px); overflow-y:auto;
+  }
+  .quote-side h2{
+    font-size:.7rem; text-transform:uppercase; letter-spacing:.09em;
+    color:var(--ink-soft); margin:0 0 10px; font-weight:600;
+  }
   .sheet-wrap{
     flex:1; padding:36px 28px 80px; display:flex; justify-content:center;
-    overflow:auto;
   }
   .sheet{
     width:100%; max-width:820px;
@@ -253,7 +291,7 @@
     padding:8px 14px; text-align:right;
   }
   .quote-badge .lbl{ font-size:.65rem; text-transform:uppercase; letter-spacing:.09em; display:block; opacity:.85;}
-  .quote-badge .val{ font-size:1.15rem; font-weight:700; font-variant-numeric:tabular-nums; }
+  .quote-badge .val{ font-size:1.1rem; font-weight:700; font-variant-numeric:tabular-nums; }
   .meta-dates{ display:flex; gap:10px; }
   .meta-dates .field{ margin:0; }
   .meta-dates label{ text-align:right; }
@@ -353,11 +391,8 @@
   }
   .doc-footer .valid{ font-weight:600; color:var(--ink); }
 
-  .toolbar{ display:flex; gap:8px; }
-  .toolbar .btn{ flex:1; }
-
   @media print{
-    .panel{ display:none; }
+    .topbar, .quote-side{ display:none !important; }
     .modal-overlay{ display:none !important; }
     .sheet-wrap{ padding:0; }
     .sheet{ box-shadow:none; border-radius:0; max-width:none; width:100%; padding:6mm 8mm; }
@@ -366,9 +401,11 @@
     @page{ size: letter; margin: 10mm; }
   }
   @media (max-width: 900px){
-    .app{ flex-direction:column; }
-    .panel{ width:auto; flex:none; border-right:none; border-bottom:1px solid var(--line); position:static; max-height:none; overflow-y:visible; }
+    .quote-layout{ flex-direction:column; }
+    .quote-side{ width:auto; flex:none; border-right:none; border-bottom:1px solid var(--line); position:static; max-height:none; overflow-y:visible; }
     .client-grid{ grid-template-columns:1fr 1fr; }
+    .topbar{ flex-wrap:wrap; }
+    .tabs{ order:3; width:100%; }
   }
 </style>
 
@@ -384,204 +421,260 @@
   </div>
 </div>
 
-<div class="app" id="appRoot" style="display:none;">
-  <aside class="panel">
-    <div class="brand"><span class="mark">C</span> Cotizador</div>
+<div id="appRoot" style="display:none;">
 
+  <header class="topbar">
+    <div class="brand"><span class="mark">C</span> Cotizador</div>
+    <nav class="tabs">
+      <button class="tab-btn active" id="tabBtnQuote" type="button">Cotización</button>
+      <button class="tab-btn" id="tabBtnAdmin" type="button">Administración</button>
+      <button class="tab-btn" id="tabBtnStats" type="button">Estadísticas</button>
+    </nav>
     <div class="user-box">
       <span class="who"><strong id="currentUserName">—</strong><span id="currentUserRole"></span></span>
       <button class="btn small ghost" id="btnMyAccount" title="Cambiar usuario o contraseña">⚙</button>
       <button class="btn small ghost" id="btnLogout">Salir</button>
     </div>
+  </header>
 
-    <div id="adminEntry" style="display:none;">
-      <button class="btn small" id="btnOpenAdmin" style="width:100%;">⚙ Usuarios y roles</button>
-    </div>
+  <main class="tab-content">
 
-    <hr class="sep">
-
-    <div>
-      <h2>Nueva / Guardar</h2>
-      <div class="toolbar">
-        <button class="btn primary" id="btnNew">+ Nueva</button>
-        <button class="btn" id="btnSave">Guardar</button>
-      </div>
-      <div class="toolbar" style="margin-top:8px;">
-        <button class="btn ghost" id="btnPrint">Imprimir / PDF</button>
-      </div>
-    </div>
-
-    <hr class="sep">
-
-    <div>
-      <h2>Cliente</h2>
-      <div class="field">
-        <input type="text" id="clientSearch" placeholder="Buscar por nombre o NIT…">
-      </div>
-      <div class="clients-list" id="clientsList">
-        <span class="empty-hint">Cargando…</span>
-      </div>
-      <button class="btn small ghost" id="btnNewClient" style="margin-top:8px; width:100%;">+ Nuevo cliente</button>
-    </div>
-
-    <hr class="sep">
-
-    <div>
-      <h2>Datos de la empresa</h2>
-      <div class="field">
-        <label>Logo</label>
-        <div class="logo-row">
-          <div class="logo-preview" id="logoPreview">—</div>
-          <input type="file" id="logoInput" accept="image/*" style="font-size:.72rem;">
-        </div>
-      </div>
-      <div class="field"><label>Nombre de la empresa</label><input id="coName" placeholder="Mi Empresa S.A.S."></div>
-      <div class="field"><label>NIT</label><input id="coNit" placeholder="900.000.000-0"></div>
-      <div class="field"><label>Dirección</label><input id="coAddress" placeholder="Cra 00 # 00-00, Ciudad"></div>
-      <div class="row2">
-        <div class="field"><label>Teléfono</label><input id="coPhone" placeholder="+57 300 0000000"></div>
-        <div class="field"><label>Email</label><input id="coEmail" placeholder="ventas@empresa.com"></div>
-      </div>
-    </div>
-
-    <hr class="sep">
-
-    <div style="flex:1; min-height:0; display:flex; flex-direction:column;">
-      <h2>Cotizaciones guardadas</h2>
-      <div class="field">
-        <input type="text" id="quoteSearchText" placeholder="Buscar por nombre o NIT…">
-      </div>
-      <div class="row2">
-        <div class="field"><label>Desde</label><input type="date" id="quoteSearchFrom"></div>
-        <div class="field"><label>Hasta</label><input type="date" id="quoteSearchTo"></div>
-      </div>
-      <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn small" id="btnSearchQuotes">Buscar</button>
-        <button class="btn small ghost" id="btnClearQuoteSearch">Limpiar</button>
-      </div>
-      <div class="quotes-list" id="quotesList">
-        <span class="empty-hint">Cargando…</span>
-      </div>
-    </div>
-  </aside>
-
-  <main class="sheet-wrap">
-    <div class="sheet" id="sheet">
-
-      <div class="doc-header">
-        <div class="company">
-          <div class="doc-logo" id="docLogo">—</div>
-          <div class="company-info">
-            <h1 id="viewCoName">Mi Empresa S.A.S.</h1>
-            <p id="viewCoNit">NIT</p>
-            <p><span id="viewCoAddress">Dirección de la empresa</span> · <span id="viewCoPhone">Teléfono</span> · <span id="viewCoEmail">Email</span></p>
+    <section id="paneQuote" class="tab-pane active">
+      <div class="quote-layout">
+        <aside class="quote-side">
+          <div class="toolbar">
+            <button class="btn primary" id="btnNew">+ Nueva</button>
+            <button class="btn" id="btnSave">Guardar</button>
           </div>
-        </div>
-        <div class="doc-meta">
-          <div class="quote-badge">
-            <span class="lbl">Cotización No.</span>
-            <span class="val" id="quoteNumber">Se asignará al guardar</span>
+          <div class="toolbar" style="margin-top:8px;">
+            <button class="btn ghost" id="btnPreview">Vista previa</button>
+            <button class="btn ghost" id="btnDeleteQuote">Eliminar</button>
           </div>
-          <div class="meta-dates">
-            <div class="field">
-              <label>Fecha cotización</label>
-              <input type="date" id="quoteDate">
-            </div>
-            <div class="field">
-              <label>Válida hasta</label>
-              <input type="date" id="validDate">
-            </div>
+          <div class="toolbar" style="margin-top:8px; margin-bottom:16px;">
+            <button class="btn ghost" id="btnPrint" style="width:100%;">Imprimir / PDF</button>
           </div>
-        </div>
-      </div>
 
-      <div>
-        <p class="section-title">Cliente</p>
-        <div class="client-grid" style="margin-top:12px;">
-          <div class="field"><label>Nombre del cliente</label><input id="clName" placeholder="Razón social / nombre"></div>
-          <div class="field"><label>NIT / C.C.</label><input id="clNit" placeholder="000.000.000-0"></div>
-          <div class="field"><label>Gerente / Responsable</label><input id="clManager" placeholder="Nombre del contacto"></div>
-          <div class="field"><label>Teléfono</label><input id="clPhone" placeholder="+57 300 0000000"></div>
-          <div class="field"><label>Dirección</label><input id="clAddress" placeholder="Dirección del cliente"></div>
-          <div class="field"><label>Email</label><input id="clEmail" placeholder="correo@cliente.com"></div>
-          <div class="field span3"><label>Proyecto a cotizar</label><input id="clProject" placeholder="Nombre del proyecto"></div>
-        </div>
-      </div>
+          <hr class="sep" style="margin-bottom:18px;">
 
-      <div>
-        <p class="section-title">Modalidad</p>
-        <div class="mode-toggle" style="margin-top:12px;">
-          <button id="modeIva" class="active">Con IVA</button>
-          <button id="modeAiu">Con AIU</button>
-        </div>
-      </div>
-
-      <div>
-        <p class="section-title">Ítems</p>
-        <div style="overflow-x:auto; margin-top:10px;">
-          <table class="items">
-            <thead>
-              <tr>
-                <th style="width:28px;">#</th>
-                <th>Descripción</th>
-                <th style="width:90px;">Unidad</th>
-                <th class="num" style="width:70px;">Cant.</th>
-                <th class="num" style="width:120px;">Valor unit.</th>
-                <th class="num" style="width:120px;">Valor total</th>
-                <th style="width:30px;"></th>
-              </tr>
-            </thead>
-            <tbody id="itemsBody"></tbody>
-          </table>
-        </div>
-        <button class="btn small ghost" id="btnAddItem" style="margin-top:10px;">+ Agregar ítem</button>
-      </div>
-
-      <div class="totals-wrap">
-        <div class="totals" id="totalsBox"></div>
-      </div>
-
-      <div>
-        <p class="section-title">Condiciones de pago</p>
-        <div class="payment-grid" style="margin-top:12px;">
+          <h2>Consultar cotizaciones</h2>
           <div class="field">
-            <label>Forma de pago</label>
-            <select id="paymentMethod">
-              <option value="">Seleccionar…</option>
-              <option value="Crédito">Crédito</option>
-              <option value="Contado">Contado</option>
-              <option value="Contra entrega">Contra entrega</option>
-              <option value="Otros">Otros</option>
-            </select>
+            <input type="text" id="quoteSearchText" placeholder="Buscar por nombre o NIT…">
           </div>
+          <div class="row2">
+            <div class="field"><label>Desde</label><input type="date" id="quoteSearchFrom"></div>
+            <div class="field"><label>Hasta</label><input type="date" id="quoteSearchTo"></div>
+          </div>
+          <div class="toolbar" style="margin-bottom:10px;">
+            <button class="btn small" id="btnSearchQuotes">Buscar</button>
+            <button class="btn small ghost" id="btnClearQuoteSearch">Limpiar</button>
+          </div>
+          <div class="quotes-list" id="quotesList">
+            <span class="empty-hint">Cargando…</span>
+          </div>
+        </aside>
+
+        <div class="sheet-wrap">
+          <div class="sheet" id="sheet">
+
+            <div class="doc-header">
+              <div class="company">
+                <div class="doc-logo" id="docLogo">—</div>
+                <div class="company-info">
+                  <h1 id="viewCoName">Mi Empresa S.A.S.</h1>
+                  <p id="viewCoNit">NIT</p>
+                  <p><span id="viewCoAddress">Dirección de la empresa</span> · <span id="viewCoPhone">Teléfono</span> · <span id="viewCoEmail">Email</span></p>
+                </div>
+              </div>
+              <div class="doc-meta">
+                <div class="quote-badge">
+                  <span class="lbl">Cotización No.</span>
+                  <span class="val" id="quoteNumber">Se asignará al guardar</span>
+                </div>
+                <div class="meta-dates">
+                  <div class="field">
+                    <label>Fecha cotización</label>
+                    <input type="date" id="quoteDate">
+                  </div>
+                  <div class="field">
+                    <label>Válida hasta</label>
+                    <input type="date" id="validDate">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="section-title">Cliente</p>
+              <div class="toolbar" style="max-width:220px; margin:10px 0 2px;">
+                <button class="btn small ghost" type="button" id="btnPickClient">🔍 Buscar cliente</button>
+              </div>
+              <div class="client-grid" style="margin-top:10px;">
+                <div class="field"><label>Nombre del cliente</label><input id="clName" placeholder="Razón social / nombre"></div>
+                <div class="field"><label>NIT / C.C.</label><input id="clNit" placeholder="000.000.000-0"></div>
+                <div class="field"><label>Gerente / Responsable</label><input id="clManager" placeholder="Nombre del contacto"></div>
+                <div class="field"><label>Teléfono</label><input id="clPhone" placeholder="+57 300 0000000"></div>
+                <div class="field"><label>Dirección</label><input id="clAddress" placeholder="Dirección del cliente"></div>
+                <div class="field"><label>Email</label><input id="clEmail" placeholder="correo@cliente.com"></div>
+                <div class="field span3"><label>Proyecto a cotizar</label><input id="clProject" placeholder="Nombre del proyecto"></div>
+              </div>
+            </div>
+
+            <div>
+              <p class="section-title">Modalidad</p>
+              <div class="mode-toggle" style="margin-top:12px;">
+                <button id="modeIva" class="active">Con IVA</button>
+                <button id="modeAiu">Con AIU</button>
+              </div>
+            </div>
+
+            <div>
+              <p class="section-title">Ítems</p>
+              <div style="overflow-x:auto; margin-top:10px;">
+                <table class="items">
+                  <thead>
+                    <tr>
+                      <th style="width:28px;">#</th>
+                      <th>Descripción</th>
+                      <th style="width:90px;">Unidad</th>
+                      <th class="num" style="width:70px;">Cant.</th>
+                      <th class="num" style="width:120px;">Valor unit.</th>
+                      <th class="num" style="width:120px;">Valor total</th>
+                      <th style="width:30px;"></th>
+                    </tr>
+                  </thead>
+                  <tbody id="itemsBody"></tbody>
+                </table>
+              </div>
+              <button class="btn small ghost" id="btnAddItem" style="margin-top:10px;">+ Agregar ítem</button>
+            </div>
+
+            <div class="totals-wrap">
+              <div class="totals" id="totalsBox"></div>
+            </div>
+
+            <div>
+              <p class="section-title">Condiciones de pago</p>
+              <div class="payment-grid" style="margin-top:12px;">
+                <div class="field">
+                  <label>Forma de pago</label>
+                  <select id="paymentMethod">
+                    <option value="">Seleccionar…</option>
+                    <option value="Crédito">Crédito</option>
+                    <option value="Contado">Contado</option>
+                    <option value="Contra entrega">Contra entrega</option>
+                    <option value="Otros">Otros</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Plazo de pago (días)</label>
+                  <input type="number" id="paymentTerm" min="0" step="1" placeholder="Ej: 30">
+                </div>
+              </div>
+            </div>
+
+            <div class="notes-field">
+              <p class="section-title">Observaciones</p>
+              <textarea id="notes" placeholder="Condiciones de pago, tiempo de entrega, garantía, etc." style="margin-top:10px;"></textarea>
+            </div>
+
+            <div class="closing">
+              <p>Este proyecto se ejecutará con toda la indumentaria de protección personal de salud y bioseguridad.</p>
+              <p>En espera que nuestra cotización sea de su entera satisfacción y poder atender sus necesidades.</p>
+              <div class="signature-block">
+                <p class="signoff">Cordialmente,</p>
+                <p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p>
+                <p class="signer-role">Gerente</p>
+              </div>
+            </div>
+
+            <div class="doc-footer">
+              <span>Esta cotización es válida hasta <span class="valid" id="footerValid">—</span>.</span>
+              <span id="footerNumber"></span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="paneAdmin" class="tab-pane">
+      <div class="admin-layout">
+
+        <div class="admin-block" id="blockCompany">
+          <h2 class="block-title">Datos de la empresa</h2>
           <div class="field">
-            <label>Plazo de pago (días)</label>
-            <input type="number" id="paymentTerm" min="0" step="1" placeholder="Ej: 30">
+            <label>Logo</label>
+            <div class="logo-row">
+              <div class="logo-preview" id="logoPreview">—</div>
+              <input type="file" id="logoInput" accept="image/*" style="font-size:.72rem;">
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Nombre de la empresa</label><input id="coName" placeholder="Mi Empresa S.A.S."></div>
+            <div class="field"><label>NIT</label><input id="coNit" placeholder="900.000.000-0"></div>
+          </div>
+          <div class="field"><label>Dirección</label><input id="coAddress" placeholder="Cra 00 # 00-00, Ciudad"></div>
+          <div class="row2">
+            <div class="field"><label>Teléfono</label><input id="coPhone" placeholder="+57 300 0000000"></div>
+            <div class="field"><label>Email</label><input id="coEmail" placeholder="ventas@empresa.com"></div>
           </div>
         </div>
-      </div>
 
-      <div class="notes-field">
-        <p class="section-title">Observaciones</p>
-        <textarea id="notes" placeholder="Condiciones de pago, tiempo de entrega, garantía, etc." style="margin-top:10px;"></textarea>
-      </div>
+        <div class="admin-block" id="blockClients">
+          <div class="toolbar" style="justify-content:space-between; margin-bottom:14px;">
+            <h2 class="block-title" style="margin:0;">Clientes</h2>
+            <button class="btn small primary" id="btnNewClient" style="flex:none;">+ Nuevo cliente</button>
+          </div>
+          <div class="field"><input type="text" id="clientSearch" placeholder="Buscar por nombre o NIT…"></div>
+          <div class="clients-list" id="clientsList" style="max-height:400px;">
+            <span class="empty-hint">Cargando…</span>
+          </div>
+        </div>
 
-      <div class="closing">
-        <p>Este proyecto se ejecutará con toda la indumentaria de protección personal de salud y bioseguridad.</p>
-        <p>En espera que nuestra cotización sea de su entera satisfacción y poder atender sus necesidades.</p>
-        <div class="signature-block">
-          <p class="signoff">Cordialmente,</p>
-          <p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p>
-          <p class="signer-role">Gerente</p>
+        <div class="admin-block" id="blockUsers" style="grid-column:1 / -1;">
+          <h2 class="block-title">Usuarios y roles</h2>
+          <div class="mode-toggle" style="margin-bottom:16px;">
+            <button id="adminTabUsers" class="active" type="button">Usuarios</button>
+            <button id="adminTabRoles" type="button">Roles y permisos</button>
+          </div>
+
+          <div id="adminUsersPane">
+            <div class="toolbar" style="margin-bottom:12px; max-width:220px;">
+              <button class="btn small primary" id="btnNewUser" type="button">+ Nuevo usuario</button>
+            </div>
+            <div id="usersList" class="admin-list"></div>
+          </div>
+
+          <div id="adminRolesPane" style="display:none;">
+            <div class="toolbar" style="margin-bottom:12px; max-width:220px;">
+              <button class="btn small primary" id="btnNewRole" type="button">+ Nuevo rol</button>
+            </div>
+            <div id="rolesList" class="admin-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="paneStats" class="tab-pane">
+      <div class="stats-layout">
+        <div class="stats-summary">
+          <div class="stats-tile">
+            <div class="lbl">Cotizaciones</div>
+            <div class="val" id="statsTotalCount">0</div>
+          </div>
+          <div class="stats-tile">
+            <div class="lbl">Valor total consolidado</div>
+            <div class="val" id="statsTotalValue">$0</div>
+          </div>
+        </div>
+        <h2 class="block-title">Cotizaciones por cliente</h2>
+        <div id="statsBody">
+          <span class="empty-hint">Cargando…</span>
         </div>
       </div>
+    </section>
 
-      <div class="doc-footer">
-        <span>Esta cotización es válida hasta <span class="valid" id="footerValid">—</span>.</span>
-        <span id="footerNumber"></span>
-      </div>
-
-    </div>
   </main>
 </div>
 
@@ -606,31 +699,25 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="adminModalOverlay">
-  <div class="modal" style="max-width:760px;">
-    <h3>Usuarios y roles</h3>
-    <div class="mode-toggle" style="margin-bottom:14px;">
-      <button id="adminTabUsers" class="active" type="button">Usuarios</button>
-      <button id="adminTabRoles" type="button">Roles y permisos</button>
-    </div>
-
-    <div id="adminUsersPane">
-      <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn small primary" id="btnNewUser" type="button">+ Nuevo usuario</button>
-      </div>
-      <div id="usersList" class="admin-list"></div>
-    </div>
-
-    <div id="adminRolesPane" style="display:none;">
-      <div class="toolbar" style="margin-bottom:10px;">
-        <button class="btn small primary" id="btnNewRole" type="button">+ Nuevo rol</button>
-      </div>
-      <div id="rolesList" class="admin-list"></div>
-    </div>
-
+<div class="modal-overlay" id="clientPickerOverlay">
+  <div class="modal" style="max-width:460px;">
+    <h3>Buscar cliente</h3>
+    <div class="field"><input type="text" id="pickerSearch" placeholder="Buscar por nombre o NIT…"></div>
+    <div class="clients-list" id="pickerList" style="max-height:340px;"></div>
     <div class="modal-actions">
       <div style="flex:1;"></div>
-      <button class="btn" id="btnCloseAdmin">Cerrar</button>
+      <button class="btn" id="btnClosePicker">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="previewOverlay">
+  <div class="modal" style="max-width:860px; padding:0; background:transparent; box-shadow:none;">
+    <div style="max-height:92vh; overflow:auto; display:flex; flex-direction:column; gap:12px;">
+      <div class="toolbar" style="justify-content:flex-end;">
+        <button class="btn" id="btnClosePreview" style="flex:none;">Cerrar</button>
+      </div>
+      <div class="sheet" id="previewSheet" style="margin:0 0 4px;"></div>
     </div>
   </div>
 </div>
@@ -711,6 +798,11 @@
     };
   }
   function ilikeTerm(q){ return '*' + String(q).replace(/[%*,()]/g, '') + '*'; }
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
 
   // ---------- Auth / session ----------
   var session = null;
@@ -846,8 +938,20 @@
 
     [coName,coNit,coAddress,coPhone,coEmail,logoInput].forEach(function(el){ el.disabled = !CAN.companyEdit; });
     document.getElementById('btnNewClient').style.display = CAN.clientCreate ? '' : 'none';
-    document.getElementById('adminEntry').style.display = CAN.usersView ? '' : 'none';
     document.getElementById('btnNew').style.display = can('quotes','create') ? '' : 'none';
+    document.getElementById('btnDeleteQuote').style.display = can('quotes','delete') ? '' : 'none';
+
+    document.getElementById('blockCompany').style.display = can('company','view') ? '' : 'none';
+    document.getElementById('blockClients').style.display = can('clients','view') ? '' : 'none';
+    document.getElementById('blockUsers').style.display = CAN.usersView ? '' : 'none';
+
+    var adminVisible = can('company','view') || can('clients','view') || CAN.usersView;
+    var statsVisible = can('quotes','view');
+    document.getElementById('tabBtnAdmin').style.display = adminVisible ? '' : 'none';
+    document.getElementById('tabBtnStats').style.display = statsVisible ? '' : 'none';
+
+    if(activeTab === 'admin' && !adminVisible) showTab('quote');
+    if(activeTab === 'stats' && !statsVisible) showTab('quote');
   }
 
   function currentQuoteEditable(){
@@ -859,7 +963,26 @@
     modeIvaBtn.disabled = !editable; modeAiuBtn.disabled = !editable;
     document.getElementById('btnAddItem').style.display = editable ? '' : 'none';
     document.getElementById('btnSave').style.display = editable ? '' : 'none';
+    document.getElementById('btnPickClient').style.display = editable ? '' : 'none';
+    document.getElementById('btnDeleteQuote').disabled = !state.committed;
   }
+
+  // ---------- Tabs ----------
+  var activeTab = 'quote';
+  function showTab(name){
+    activeTab = name;
+    ['quote','admin','stats'].forEach(function(t){
+      var pane = document.getElementById('pane' + t.charAt(0).toUpperCase() + t.slice(1));
+      var btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+      pane.classList.toggle('active', t === name);
+      btn.classList.toggle('active', t === name);
+    });
+    if(name === 'admin'){ renderUsersList(); renderRolesList(); }
+    if(name === 'stats'){ renderStats(); }
+  }
+  document.getElementById('tabBtnQuote').addEventListener('click', function(){ showTab('quote'); });
+  document.getElementById('tabBtnAdmin').addEventListener('click', function(){ showTab('admin'); });
+  document.getElementById('tabBtnStats').addEventListener('click', function(){ showTab('stats'); });
 
   // ---------- Company ----------
   var company = {name:"", nit:"", address:"", phone:"", email:"", logo:""};
@@ -988,7 +1111,18 @@
   clEmail.addEventListener('input', function(){ state.client.email = clEmail.value; });
   clProject.addEventListener('input', function(){ state.project = clProject.value; });
 
-  // ---------- Directorio de clientes ----------
+  function applyClient(c){
+    state.client.name = c.name || "";
+    state.client.nit = c.nit || "";
+    state.client.manager = c.manager || "";
+    state.client.phone = c.phone || "";
+    state.client.address = c.address || "";
+    state.client.email = c.email || "";
+    state.clientId = c.id || null;
+    renderClient();
+  }
+
+  // ---------- Directorio de clientes (pestaña Administración) ----------
   var clientSearchEl = document.getElementById('clientSearch');
   var clientsListEl = document.getElementById('clientsList');
   var clientModalOverlay = document.getElementById('clientModalOverlay');
@@ -1003,17 +1137,6 @@
   var btnDeleteClient = document.getElementById('btnDeleteClient');
   var editingClientId = null;
 
-  function applyClient(c){
-    state.client.name = c.name || "";
-    state.client.nit = c.nit || "";
-    state.client.manager = c.manager || "";
-    state.client.phone = c.phone || "";
-    state.client.address = c.address || "";
-    state.client.email = c.email || "";
-    state.clientId = c.id || null;
-    renderClient();
-  }
-
   async function fetchClients(query){
     var path = '/clients?select=*&order=name.asc';
     if(query){
@@ -1023,29 +1146,25 @@
     return await sb(path);
   }
 
-  async function renderClientsList(){
-    var query = (clientSearchEl.value || "").trim();
-    var clients;
-    try{ clients = await fetchClients(query); }
-    catch(e){ clientsListEl.innerHTML = '<span class="empty-hint">Error al cargar clientes: '+e.message+'</span>'; return; }
+  function buildClientRow(c, mode){
+    var row = document.createElement('div'); row.className = 'client-item';
+    var main = document.createElement('button'); main.type = 'button'; main.className = 'client-main';
+    var subParts = [c.nit, c.manager].filter(Boolean).join(' · ');
+    main.innerHTML = '<span class="num"></span><span class="sub"></span>';
+    main.querySelector('.num').textContent = c.name || '(Sin nombre)';
+    main.querySelector('.sub').textContent = subParts;
 
-    clientsListEl.innerHTML = "";
-    if(!clients.length){
-      clientsListEl.innerHTML = '<span class="empty-hint">'+(query ? 'Sin resultados.' : 'Aún no hay clientes guardados.')+'</span>';
-      return;
-    }
-    clients.forEach(function(c){
-      var row = document.createElement('div'); row.className = 'client-item';
+    var actions = document.createElement('div'); actions.className = 'client-actions';
 
-      var main = document.createElement('button'); main.type = 'button'; main.className = 'client-main';
+    if(mode === 'pick'){
       main.title = 'Usar este cliente en la cotización';
-      var subParts = [c.nit, c.manager].filter(Boolean).join(' · ');
-      main.innerHTML = '<span class="num"></span><span class="sub"></span>';
-      main.querySelector('.num').textContent = c.name || '(Sin nombre)';
-      main.querySelector('.sub').textContent = subParts;
-      main.addEventListener('click', function(){ applyClient(c); });
-
-      var actions = document.createElement('div'); actions.className = 'client-actions';
+      main.addEventListener('click', function(){
+        applyClient(c);
+        document.getElementById('clientPickerOverlay').classList.remove('open');
+      });
+    } else {
+      main.title = 'Editar cliente';
+      main.addEventListener('click', function(){ if(CAN.clientEdit) openClientModal(c); });
       if(CAN.clientEdit){
         var editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'icon-btn'; editBtn.title = 'Editar'; editBtn.textContent = '✎';
         editBtn.addEventListener('click', function(e){ e.stopPropagation(); openClientModal(c); });
@@ -1062,10 +1181,24 @@
         });
         actions.appendChild(delBtn);
       }
+    }
 
-      row.appendChild(main); row.appendChild(actions);
-      clientsListEl.appendChild(row);
-    });
+    row.appendChild(main); row.appendChild(actions);
+    return row;
+  }
+
+  async function renderClientsList(){
+    var query = (clientSearchEl.value || "").trim();
+    var clients;
+    try{ clients = await fetchClients(query); }
+    catch(e){ clientsListEl.innerHTML = '<span class="empty-hint">Error al cargar clientes: '+e.message+'</span>'; return; }
+
+    clientsListEl.innerHTML = "";
+    if(!clients.length){
+      clientsListEl.innerHTML = '<span class="empty-hint">'+(query ? 'Sin resultados.' : 'Aún no hay clientes guardados.')+'</span>';
+      return;
+    }
+    clients.forEach(function(c){ clientsListEl.appendChild(buildClientRow(c, 'admin')); });
   }
 
   function openClientModal(client){
@@ -1090,9 +1223,12 @@
   document.getElementById('btnNewClient').addEventListener('click', function(){ openClientModal(null); });
   document.getElementById('btnCancelClient').addEventListener('click', closeClientModal);
   clientModalOverlay.addEventListener('click', function(e){ if(e.target === clientModalOverlay) closeClientModal(); });
+
+  var ALL_OVERLAY_IDS = ['clientModalOverlay','clientPickerOverlay','previewOverlay','newUserModalOverlay','newRoleModalOverlay','accountModalOverlay'];
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
-    [clientModalOverlay, document.getElementById('adminModalOverlay'), document.getElementById('newUserModalOverlay'), document.getElementById('newRoleModalOverlay'), document.getElementById('accountModalOverlay')].forEach(function(ov){
+    ALL_OVERLAY_IDS.forEach(function(id){
+      var ov = document.getElementById(id);
       if(ov.classList.contains('open')) ov.classList.remove('open');
     });
   });
@@ -1135,6 +1271,36 @@
   });
 
   clientSearchEl.addEventListener('input', debounce(function(){ renderClientsList(); }, 350));
+
+  // ---------- Buscador de cliente al crear una cotización ----------
+  var pickerSearchEl = document.getElementById('pickerSearch');
+  var pickerListEl = document.getElementById('pickerList');
+
+  async function renderPickerList(){
+    var query = (pickerSearchEl.value || "").trim();
+    var clients;
+    try{ clients = await fetchClients(query); }
+    catch(e){ pickerListEl.innerHTML = '<span class="empty-hint">Error: '+e.message+'</span>'; return; }
+    pickerListEl.innerHTML = "";
+    if(!clients.length){
+      pickerListEl.innerHTML = '<span class="empty-hint">'+(query ? 'Sin resultados.' : 'Aún no hay clientes guardados.')+'</span>';
+      return;
+    }
+    clients.forEach(function(c){ pickerListEl.appendChild(buildClientRow(c, 'pick')); });
+  }
+  document.getElementById('btnPickClient').addEventListener('click', function(){
+    pickerSearchEl.value = '';
+    document.getElementById('clientPickerOverlay').classList.add('open');
+    renderPickerList();
+    pickerSearchEl.focus();
+  });
+  document.getElementById('btnClosePicker').addEventListener('click', function(){
+    document.getElementById('clientPickerOverlay').classList.remove('open');
+  });
+  document.getElementById('clientPickerOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+  pickerSearchEl.addEventListener('input', debounce(renderPickerList, 300));
 
   quoteDateEl.addEventListener('change', function(){ state.date = quoteDateEl.value; });
   validDateEl.addEventListener('change', function(){ state.validUntil = validDateEl.value; renderHeaderBits(); });
@@ -1291,6 +1457,85 @@
     }
   }
 
+  // ---------- Vista previa ----------
+  function buildPreviewMarkup(){
+    var sub = subtotal();
+    var totalsHtml;
+
+    function lineHtml(label, amount, grand){
+      return '<div class="line'+(grand?' grand':'')+'"><span>'+label+'</span><span class="amt">'+fmt.format(amount)+'</span></div>';
+    }
+    if(state.mode === 'iva'){
+      var ivaVal = sub*(state.ivaPercent/100);
+      totalsHtml = lineHtml('Subtotal', sub) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
+        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true);
+    } else {
+      var aiuTotal = sub*((state.aiu.a+state.aiu.i+state.aiu.u)/100);
+      var baseIva = sub+aiuTotal;
+      var utilidadVal = sub*(state.aiu.u/100);
+      var ivaOnAiu = utilidadVal*(state.aiuIvaPercent/100);
+      totalsHtml = lineHtml('Subtotal', sub) + lineHtml('AIU', aiuTotal) + lineHtml('Subtotal + AIU', baseIva)
+        + lineHtml('IVA sobre utilidad ('+state.aiuIvaPercent+'%)', ivaOnAiu)
+        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', baseIva+ivaOnAiu, true);
+    }
+
+    var itemsRows = state.items.map(function(it, i){
+      return '<tr><td class="item-idx">'+(i+1)+'</td><td>'+escapeHtml(it.desc||'')+'</td><td>'+escapeHtml(it.unit||'')+'</td>'
+        + '<td class="num">'+(it.qty||0)+'</td><td class="num">'+fmt.format(it.price||0)+'</td><td class="total-cell">'+fmt.format((it.qty||0)*(it.price||0))+'</td></tr>';
+    }).join('');
+
+    var logoHtml = company.logo ? '<img src="'+company.logo+'" alt="Logo">' : escapeHtml((company.name||'?').trim().charAt(0).toUpperCase()||'?');
+
+    return ''
+      + '<div class="doc-header">'
+      +   '<div class="company">'
+      +     '<div class="doc-logo">'+logoHtml+'</div>'
+      +     '<div class="company-info">'
+      +       '<h1>'+escapeHtml(company.name||'Nombre de la empresa')+'</h1>'
+      +       '<p>'+(company.nit?('NIT '+escapeHtml(company.nit)):'NIT')+'</p>'
+      +       '<p>'+escapeHtml(company.address||'Dirección de la empresa')+' · '+escapeHtml(company.phone||'Teléfono')+' · '+escapeHtml(company.email||'Email')+'</p>'
+      +     '</div>'
+      +   '</div>'
+      +   '<div class="doc-meta">'
+      +     '<div class="quote-badge"><span class="lbl">Cotización No.</span><span class="val">'+escapeHtml(state.number || 'Se asignará al guardar')+'</span></div>'
+      +     '<div style="font-size:.78rem; color:var(--ink-soft); text-align:right; line-height:1.6;">'
+      +       'Fecha: '+(state.date?formatDate(state.date):'—')+'<br>'
+      +       'Válida hasta: '+(state.validUntil?formatDate(state.validUntil):'—')
+      +     '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div><p class="section-title">Cliente</p><div style="margin-top:10px; font-size:.85rem; line-height:1.6;">'
+      +   '<strong>'+escapeHtml(state.client.name||'—')+'</strong> · NIT '+escapeHtml(state.client.nit||'—')+'<br>'
+      +   'Responsable: '+escapeHtml(state.client.manager||'—')+' · Tel: '+escapeHtml(state.client.phone||'—')+'<br>'
+      +   escapeHtml(state.client.address||'—')+' · '+escapeHtml(state.client.email||'—')+'<br>'
+      +   'Proyecto: '+escapeHtml(state.project||'—')
+      + '</div></div>'
+      + '<div><p class="section-title">Ítems</p><table class="items" style="margin-top:10px;">'
+      +   '<thead><tr><th style="width:28px;">#</th><th>Descripción</th><th style="width:70px;">Unidad</th>'
+      +   '<th class="num" style="width:60px;">Cant.</th><th class="num" style="width:110px;">Valor unit.</th><th class="num" style="width:110px;">Valor total</th></tr></thead>'
+      +   '<tbody>'+itemsRows+'</tbody></table></div>'
+      + '<div class="totals-wrap"><div class="totals">'+totalsHtml+'</div></div>'
+      + '<div style="font-size:.85rem;"><p class="section-title">Condiciones de pago</p><p style="margin-top:10px;">'
+      +   'Forma de pago: '+escapeHtml(state.paymentMethod||'—')+' · Plazo: '+escapeHtml(state.paymentTerm||'—')+' días</p></div>'
+      + (state.notes ? ('<div style="font-size:.85rem;"><p class="section-title">Observaciones</p><p style="margin-top:10px; white-space:pre-wrap;">'+escapeHtml(state.notes)+'</p></div>') : '')
+      + '<div class="closing">'
+      +   '<p>Este proyecto se ejecutará con toda la indumentaria de protección personal de salud y bioseguridad.</p>'
+      +   '<p>En espera que nuestra cotización sea de su entera satisfacción y poder atender sus necesidades.</p>'
+      +   '<div class="signature-block"><p class="signoff">Cordialmente,</p><p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p><p class="signer-role">Gerente</p></div>'
+      + '</div>';
+  }
+
+  document.getElementById('btnPreview').addEventListener('click', function(){
+    document.getElementById('previewSheet').innerHTML = buildPreviewMarkup();
+    document.getElementById('previewOverlay').classList.add('open');
+  });
+  document.getElementById('btnClosePreview').addEventListener('click', function(){
+    document.getElementById('previewOverlay').classList.remove('open');
+  });
+  document.getElementById('previewOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+
   // ---------- Render all / quotes list ----------
   function renderAll(){
     quoteDateEl.value = state.date;
@@ -1403,6 +1648,7 @@
         headers:{Prefer:'resolution=merge-duplicates,return=representation'},
         body: JSON.stringify(payload)
       });
+      refreshQuoteEditability();
       await renderQuotesList();
       var original = btn.textContent;
       btn.textContent = 'Guardado ✓';
@@ -1411,6 +1657,22 @@
       alert('No se pudo guardar la cotización: ' + e.message);
     }finally{
       btn.disabled = false;
+    }
+  });
+
+  document.getElementById('btnDeleteQuote').addEventListener('click', async function(){
+    if(!state.committed) return;
+    if(!confirm('¿Eliminar definitivamente la cotización '+state.number+'? Esta acción no se puede deshacer.')) return;
+    this.disabled = true;
+    try{
+      await sb('/quotes?number=eq.'+encodeURIComponent(state.number), {method:'DELETE'});
+      state = blankQuote();
+      renderAll();
+      await renderQuotesList();
+    }catch(e){
+      alert('No se pudo eliminar la cotización: ' + e.message);
+    }finally{
+      this.disabled = false;
     }
   });
 
@@ -1432,11 +1694,83 @@
     renderQuotesList();
   });
 
+  // ---------- Estadísticas ----------
+  function computeQuoteTotal(q){
+    var sub = (q.items||[]).reduce(function(s,it){ return s + (it.qty||0)*(it.price||0); }, 0);
+    if(q.mode === 'aiu'){
+      var aiu = q.aiu || {a:0,i:0,u:0};
+      var aiuTotal = sub * (((aiu.a||0)+(aiu.i||0)+(aiu.u||0))/100);
+      var base = sub + aiuTotal;
+      var utilidadVal = sub * ((aiu.u||0)/100);
+      var ivaOnAiu = utilidadVal * ((q.aiu_iva_percent||0)/100);
+      return base + ivaOnAiu;
+    }
+    var ivaVal = sub * ((q.iva_percent||0)/100);
+    return sub + ivaVal;
+  }
+
+  async function renderStats(){
+    var box = document.getElementById('statsBody');
+    box.innerHTML = '<span class="empty-hint">Cargando…</span>';
+    var quotes;
+    try{ quotes = await sb('/quotes?select=*&order=quote_date.desc'); }
+    catch(e){ box.innerHTML = '<span class="empty-hint">Error al cargar: '+e.message+'</span>'; return; }
+
+    var totalGeneral = 0;
+    var groups = {};
+    quotes.forEach(function(q){
+      var total = computeQuoteTotal(q);
+      totalGeneral += total;
+      var c = q.client || {};
+      var key = c.nit || c.name || 'sin-cliente';
+      if(!groups[key]){
+        groups[key] = { name: c.name || 'Sin cliente', nit: c.nit || '', count:0, total:0, items:[] };
+      }
+      groups[key].count++;
+      groups[key].total += total;
+      groups[key].items.push({number:q.number, date:q.quote_date, total:total});
+    });
+
+    document.getElementById('statsTotalCount').textContent = quotes.length;
+    document.getElementById('statsTotalValue').textContent = fmt.format(totalGeneral);
+
+    var rows = Object.keys(groups).map(function(k){ return groups[k]; }).sort(function(a,b){ return b.total - a.total; });
+    box.innerHTML = "";
+    if(!rows.length){
+      box.innerHTML = '<span class="empty-hint">Aún no hay cotizaciones guardadas.</span>';
+      return;
+    }
+    rows.forEach(function(g){
+      var card = document.createElement('div'); card.className = 'stats-card';
+      var head = document.createElement('button'); head.type = 'button'; head.className = 'stats-card-head';
+      head.innerHTML = '<span class="stats-client"></span><span class="stats-count"></span><span class="stats-amt"></span>';
+      head.querySelector('.stats-client').textContent = g.name + (g.nit ? ' · '+g.nit : '');
+      head.querySelector('.stats-count').textContent = g.count + (g.count===1?' cotización':' cotizaciones');
+      head.querySelector('.stats-amt').textContent = fmt.format(g.total);
+
+      var detail = document.createElement('div'); detail.className = 'stats-detail'; detail.style.display = 'none';
+      g.items.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).forEach(function(it){
+        var row = document.createElement('div'); row.className = 'stats-detail-row';
+        row.innerHTML = '<span></span><span></span><span></span>';
+        var spans = row.querySelectorAll('span');
+        spans[0].textContent = it.number;
+        spans[1].textContent = it.date ? formatDate(it.date) : 'sin fecha';
+        spans[2].textContent = fmt.format(it.total);
+        detail.appendChild(row);
+      });
+      head.addEventListener('click', function(){ detail.style.display = detail.style.display === 'none' ? '' : 'none'; });
+
+      card.appendChild(head); card.appendChild(detail);
+      box.appendChild(card);
+    });
+  }
+
   // ---------- Admin: users & roles ----------
   async function fetchRoles(){ return await sb('/roles?select=*&order=name.asc'); }
   async function fetchUsers(){ return await sb('/profiles?select=*,roles(id,name)&order=email.asc'); }
 
   async function renderUsersList(){
+    if(!CAN.usersView) return;
     var box = document.getElementById('usersList');
     box.innerHTML = '<span class="empty-hint">Cargando…</span>';
     var users, roles;
@@ -1490,6 +1824,7 @@
   }
 
   async function renderRolesList(){
+    if(!CAN.usersView) return;
     var box = document.getElementById('rolesList');
     box.innerHTML = '<span class="empty-hint">Cargando…</span>';
     var roles;
@@ -1536,7 +1871,9 @@
               try{
                 await sb('/roles?id=eq.'+r.id, {method:'PATCH', body: JSON.stringify({permissions:perms})});
                 r.permissions = perms;
-                if(CURRENT_PROFILE && CURRENT_PROFILE.role_id === r.id){ PERMS = perms; applyPermissionsToUI(); refreshQuoteEditability(); renderItems(); renderTotals(); }
+                if(CURRENT_PROFILE && CURRENT_PROFILE.role_id === r.id){
+                  PERMS = perms; applyPermissionsToUI(); refreshQuoteEditability(); renderItems(); renderTotals();
+                }
               }catch(e){ alert('No se pudo actualizar el permiso: '+e.message); cb.checked = !cb.checked; }
             });
             td.appendChild(cb);
@@ -1550,18 +1887,6 @@
     });
   }
 
-  var btnOpenAdmin = document.getElementById('btnOpenAdmin');
-  btnOpenAdmin.addEventListener('click', function(){
-    document.getElementById('adminModalOverlay').classList.add('open');
-    renderUsersList();
-    renderRolesList();
-  });
-  document.getElementById('btnCloseAdmin').addEventListener('click', function(){
-    document.getElementById('adminModalOverlay').classList.remove('open');
-  });
-  document.getElementById('adminModalOverlay').addEventListener('click', function(e){
-    if(e.target === this) this.classList.remove('open');
-  });
   document.getElementById('adminTabUsers').addEventListener('click', function(){
     this.classList.add('active'); document.getElementById('adminTabRoles').classList.remove('active');
     document.getElementById('adminUsersPane').style.display=''; document.getElementById('adminRolesPane').style.display='none';
@@ -1745,6 +2070,7 @@
     renderAll();
     renderQuotesList();
     renderClientsList();
+    showTab('quote');
   }
   init();
 })();
