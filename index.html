@@ -101,6 +101,9 @@
   .field input:focus, .field textarea:focus, .field select:focus{
     outline:2px solid var(--accent); outline-offset:1px;
   }
+  .field input:disabled, .field textarea:disabled, .field select:disabled{
+    opacity:.55; cursor:not-allowed;
+  }
   .logo-row{ display:flex; align-items:center; gap:10px; }
   .logo-preview{
     height:52px;min-width:52px;max-width:120px;border-radius:8px;border:1px dashed var(--line);
@@ -174,6 +177,40 @@
 
   hr.sep{ border:none; border-top:1px solid var(--line); margin:0; }
 
+  /* ---------- Login ---------- */
+  #authOverlay{ z-index:300; }
+  #authOverlay .modal{ max-width:360px; }
+  .auth-error{ color:var(--danger); font-size:.8rem; margin:2px 0 4px; display:none; }
+
+  /* ---------- Current user box ---------- */
+  .user-box{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    font-size:.76rem; color:var(--ink-soft); background:var(--paper);
+    border:1px solid var(--line); border-radius:8px; padding:8px 10px;
+  }
+  .user-box .who{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .user-box .who strong{ color:var(--ink); display:block; font-size:.8rem; }
+
+  /* ---------- Admin (users & roles) ---------- */
+  .admin-list{ display:flex; flex-direction:column; gap:8px; max-height:52vh; overflow:auto; }
+  .admin-row{
+    display:flex; align-items:center; gap:10px; border:1px solid var(--line);
+    border-radius:8px; padding:8px 10px; font-size:.82rem;
+  }
+  .admin-row .who{ flex:1; min-width:0; }
+  .admin-row .who .name{ font-weight:700; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-row .who .sub{ color:var(--ink-soft); font-size:.76rem; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .admin-row select{ font:inherit; font-size:.78rem; padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); max-width:150px; }
+  .admin-row label.toggle{ display:flex; align-items:center; gap:5px; font-size:.76rem; white-space:nowrap; color:var(--ink-soft); }
+
+  .role-card{ border:1px solid var(--line); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .role-card-head{ display:flex; align-items:center; gap:8px; }
+  .role-card-head .name{ font-weight:700; flex:1; font-size:.9rem; }
+  table.perm-table{ width:100%; border-collapse:collapse; font-size:.74rem; }
+  table.perm-table th{ text-align:center; font-weight:600; color:var(--ink-soft); padding:2px 4px; }
+  table.perm-table td{ text-align:center; padding:3px 4px; }
+  table.perm-table td.mod-label{ text-align:left; color:var(--ink-soft); white-space:nowrap; }
+
   /* ---------- Document area ---------- */
   .sheet-wrap{
     flex:1; padding:36px 28px 80px; display:flex; justify-content:center;
@@ -244,6 +281,7 @@
   }
   .mode-toggle button + button{ border-left:1px solid var(--line); }
   .mode-toggle button.active{ background:var(--accent); color:var(--paper); }
+  .mode-toggle button:disabled{ opacity:.5; cursor:not-allowed; }
 
   table.items{
     width:100%; border-collapse:collapse; font-size:.85rem;
@@ -263,6 +301,7 @@
   table.items input:hover, table.items select:hover{ border-color:var(--line); }
   table.items input:focus, table.items select:focus{ outline:none; border-color:var(--accent); background:var(--paper-2); }
   table.items input.qty, table.items input.price{ text-align:right; }
+  table.items input:disabled, table.items select:disabled{ opacity:.6; }
   td.total-cell{ text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
   td.item-idx{ color:var(--ink-soft); font-variant-numeric:tabular-nums; width:28px; }
   td.rm{ width:30px; text-align:center; }
@@ -333,9 +372,32 @@
   }
 </style>
 
-<div class="app">
+<div class="modal-overlay open" id="authOverlay">
+  <div class="modal">
+    <h3>Iniciar sesión</h3>
+    <div class="field"><label>Correo</label><input type="email" id="authEmail" autocomplete="username"></div>
+    <div class="field"><label>Contraseña</label><input type="password" id="authPassword" autocomplete="current-password"></div>
+    <p class="auth-error" id="authError"></p>
+    <div class="modal-actions">
+      <button class="btn primary" id="btnLogin" style="width:100%;">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none;">
   <aside class="panel">
     <div class="brand"><span class="mark">C</span> Cotizador</div>
+
+    <div class="user-box">
+      <span class="who"><strong id="currentUserName">—</strong><span id="currentUserRole"></span></span>
+      <button class="btn small ghost" id="btnLogout">Salir</button>
+    </div>
+
+    <div id="adminEntry" style="display:none;">
+      <button class="btn small" id="btnOpenAdmin" style="width:100%;">⚙ Usuarios y roles</button>
+    </div>
+
+    <hr class="sep">
 
     <div>
       <h2>Nueva / Guardar</h2>
@@ -356,7 +418,7 @@
         <input type="text" id="clientSearch" placeholder="Buscar por nombre o NIT…">
       </div>
       <div class="clients-list" id="clientsList">
-        <span class="empty-hint">Aún no hay clientes guardados.</span>
+        <span class="empty-hint">Cargando…</span>
       </div>
       <button class="btn small ghost" id="btnNewClient" style="margin-top:8px; width:100%;">+ Nuevo cliente</button>
     </div>
@@ -397,7 +459,7 @@
         <button class="btn small ghost" id="btnClearQuoteSearch">Limpiar</button>
       </div>
       <div class="quotes-list" id="quotesList">
-        <span class="empty-hint">Aún no hay cotizaciones guardadas.</span>
+        <span class="empty-hint">Cargando…</span>
       </div>
     </div>
   </aside>
@@ -417,7 +479,7 @@
         <div class="doc-meta">
           <div class="quote-badge">
             <span class="lbl">Cotización No.</span>
-            <span class="val" id="quoteNumber">2026-0001</span>
+            <span class="val" id="quoteNumber">Se asignará al guardar</span>
           </div>
           <div class="meta-dates">
             <div class="field">
@@ -515,7 +577,7 @@
 
       <div class="doc-footer">
         <span>Esta cotización es válida hasta <span class="valid" id="footerValid">—</span>.</span>
-        <span id="footerNumber">Cotización 2026-0001</span>
+        <span id="footerNumber"></span>
       </div>
 
     </div>
@@ -533,6 +595,7 @@
       <div class="field"><label>Email</label><input id="mClEmail" placeholder="correo@cliente.com"></div>
     </div>
     <div class="field"><label>Dirección</label><input id="mClAddress" placeholder="Dirección del cliente"></div>
+    <p class="auth-error" id="clientModalError"></p>
     <div class="modal-actions">
       <button class="btn ghost" id="btnDeleteClient" style="display:none;">Eliminar</button>
       <div style="flex:1;"></div>
@@ -542,13 +605,68 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="adminModalOverlay">
+  <div class="modal" style="max-width:760px;">
+    <h3>Usuarios y roles</h3>
+    <div class="mode-toggle" style="margin-bottom:14px;">
+      <button id="adminTabUsers" class="active" type="button">Usuarios</button>
+      <button id="adminTabRoles" type="button">Roles y permisos</button>
+    </div>
+
+    <div id="adminUsersPane">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn small primary" id="btnNewUser" type="button">+ Nuevo usuario</button>
+      </div>
+      <div id="usersList" class="admin-list"></div>
+    </div>
+
+    <div id="adminRolesPane" style="display:none;">
+      <div class="toolbar" style="margin-bottom:10px;">
+        <button class="btn small primary" id="btnNewRole" type="button">+ Nuevo rol</button>
+      </div>
+      <div id="rolesList" class="admin-list"></div>
+    </div>
+
+    <div class="modal-actions">
+      <div style="flex:1;"></div>
+      <button class="btn" id="btnCloseAdmin">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newUserModalOverlay">
+  <div class="modal" style="max-width:380px;">
+    <h3>Nuevo usuario</h3>
+    <div class="field"><label>Correo</label><input type="email" id="nuEmail"></div>
+    <div class="field"><label>Nombre</label><input id="nuFullName"></div>
+    <div class="field"><label>Rol</label><select id="nuRole"></select></div>
+    <p class="auth-error" id="nuError"></p>
+    <div class="modal-actions">
+      <button class="btn" id="btnCancelNewUser">Cancelar</button>
+      <button class="btn primary" id="btnCreateUser">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="newRoleModalOverlay">
+  <div class="modal" style="max-width:340px;">
+    <h3>Nuevo rol</h3>
+    <div class="field"><label>Nombre del rol</label><input id="nrName" placeholder="Ej: Vendedor"></div>
+    <div class="modal-actions">
+      <button class="btn" id="btnCancelNewRole">Cancelar</button>
+      <button class="btn primary" id="btnCreateRole">Crear</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
-  var LS_COMPANY = "cotizador_company_v1";
-  var LS_QUOTES = "cotizador_quotes_v1";
-  var LS_CLIENTS = "cotizador_clients_v1";
-  var LS_COUNTER_PREFIX = "cotizador_counter_";
+
+  // ---------- Config ----------
+  var SUPABASE_URL = "https://hnkjgtxetbruencfwaal.supabase.co";
+  var SUPABASE_ANON_KEY = "sb_publishable_H-RzgxsrW--3Zi_9ygVnoQ_GTr6Ht2A";
+  var SESSION_KEY = "cotizador_session_v1";
 
   var fmt = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', maximumFractionDigits:0});
   var UNIT_OPTIONS = [
@@ -561,24 +679,162 @@
     {value:"mm", label:"mm"}
   ];
   var todayISO = function(){ return new Date().toISOString().slice(0,10); };
-
-  function loadJSON(key, fallback){
-    try{ var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-    catch(e){ return fallback; }
+  function formatDate(iso){
+    if(!iso) return "—";
+    var parts = iso.split("-");
+    if(parts.length!==3) return iso;
+    var meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    return parts[2] + " " + meses[parseInt(parts[1],10)-1] + " " + parts[0];
   }
-  function saveJSON(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+  function debounce(fn, wait){
+    var t;
+    return function(){
+      var args = arguments, ctx = this;
+      clearTimeout(t);
+      t = setTimeout(function(){ fn.apply(ctx, args); }, wait);
+    };
+  }
+  function ilikeTerm(q){ return '*' + String(q).replace(/[%*,()]/g, '') + '*'; }
+
+  // ---------- Auth / session ----------
+  var session = null;
+
+  function loadSession(){
+    try{ var v = localStorage.getItem(SESSION_KEY); return v ? JSON.parse(v) : null; }
+    catch(e){ return null; }
+  }
+  function saveSession(s){
+    session = s;
+    if(s) localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    else localStorage.removeItem(SESSION_KEY);
+  }
+
+  async function authFetch(path, opts){
+    opts = opts || {};
+    var headers = Object.assign({apikey:SUPABASE_ANON_KEY, 'Content-Type':'application/json'}, opts.headers||{});
+    return fetch(SUPABASE_URL + path, Object.assign({}, opts, {headers:headers}));
+  }
+
+  async function login(email, password){
+    var res = await authFetch('/auth/v1/token?grant_type=password', {
+      method:'POST',
+      body: JSON.stringify({email:email, password:password})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error(data.error_description || data.msg || 'No se pudo iniciar sesión');
+    var expiresAt = Date.now() + (data.expires_in*1000);
+    saveSession({access_token:data.access_token, refresh_token:data.refresh_token, expires_at:expiresAt, user:data.user});
+    return session;
+  }
+
+  async function refreshSession(){
+    if(!session || !session.refresh_token) return null;
+    var res = await authFetch('/auth/v1/token?grant_type=refresh_token', {
+      method:'POST',
+      body: JSON.stringify({refresh_token:session.refresh_token})
+    });
+    if(!res.ok){ saveSession(null); return null; }
+    var data = await res.json();
+    var expiresAt = Date.now() + (data.expires_in*1000);
+    saveSession({access_token:data.access_token, refresh_token:data.refresh_token, expires_at:expiresAt, user:data.user});
+    return session;
+  }
+
+  async function ensureSession(){
+    session = loadSession();
+    if(!session) return null;
+    if(Date.now() > session.expires_at - 30000){
+      return await refreshSession();
+    }
+    return session;
+  }
+
+  function logout(){
+    var token = session ? session.access_token : null;
+    saveSession(null);
+    if(token){
+      authFetch('/auth/v1/logout', {method:'POST', headers:{Authorization:'Bearer '+token}}).catch(function(){});
+    }
+    location.reload();
+  }
+
+  // ---------- Supabase REST helper ----------
+  async function sb(path, opts){
+    opts = opts || {};
+    var headers = Object.assign({
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + (session ? session.access_token : SUPABASE_ANON_KEY),
+      'Content-Type':'application/json'
+    }, opts.headers||{});
+    var res = await fetch(SUPABASE_URL + '/rest/v1' + path, Object.assign({}, opts, {headers:headers}));
+    if(res.status === 401 && session){
+      var refreshed = await refreshSession();
+      if(refreshed){
+        headers.Authorization = 'Bearer ' + refreshed.access_token;
+        res = await fetch(SUPABASE_URL + '/rest/v1' + path, Object.assign({}, opts, {headers:headers}));
+      }
+    }
+    var text = await res.text();
+    var data = text ? JSON.parse(text) : null;
+    if(!res.ok){
+      var msg = (data && (data.message || data.hint || data.details)) || res.statusText;
+      throw new Error(msg);
+    }
+    return data;
+  }
+
+  // ---------- Permissions ----------
+  var PERMS = {};
+  var CURRENT_PROFILE = null;
+  var MODULES = [
+    {key:'clients', label:'Clientes', actions:['view','create','edit','delete']},
+    {key:'quotes', label:'Cotizaciones', actions:['view','create','edit','delete']},
+    {key:'company', label:'Empresa', actions:['view','edit']},
+    {key:'users', label:'Usuarios', actions:['view','edit']}
+  ];
+  var ALL_ACTIONS = ['view','create','edit','delete'];
+  var ACTION_LABELS = {view:'Ver', create:'Crear', edit:'Editar', delete:'Eliminar'};
+
+  function can(mod, action){ return !!(PERMS[mod] && PERMS[mod][action]); }
+
+  async function loadMyProfile(){
+    var rows = await sb('/profiles?id=eq.' + session.user.id + '&select=*,roles(id,name,permissions,is_system)');
+    if(!rows || !rows.length) throw new Error('Tu usuario no tiene un perfil asignado. Contacta a un administrador.');
+    var p = rows[0];
+    if(!p.active) throw new Error('Tu cuenta está desactivada. Contacta a un administrador.');
+    CURRENT_PROFILE = p;
+    PERMS = (p.roles && p.roles.permissions) || {};
+  }
+
+  var CAN = { clientCreate:false, clientEdit:false, clientDelete:false, companyEdit:false, usersView:false, usersEdit:false };
+
+  function applyPermissionsToUI(){
+    CAN.clientCreate = can('clients','create');
+    CAN.clientEdit = can('clients','edit');
+    CAN.clientDelete = can('clients','delete');
+    CAN.companyEdit = can('company','edit');
+    CAN.usersView = can('users','view');
+    CAN.usersEdit = can('users','edit');
+
+    [coName,coNit,coAddress,coPhone,coEmail,logoInput].forEach(function(el){ el.disabled = !CAN.companyEdit; });
+    document.getElementById('btnNewClient').style.display = CAN.clientCreate ? '' : 'none';
+    document.getElementById('adminEntry').style.display = CAN.usersView ? '' : 'none';
+    document.getElementById('btnNew').style.display = can('quotes','create') ? '' : 'none';
+  }
+
+  function currentQuoteEditable(){
+    return state.committed ? can('quotes','edit') : can('quotes','create');
+  }
+  function refreshQuoteEditability(){
+    var editable = currentQuoteEditable();
+    [clName,clNit,clManager,clPhone,clAddress,clEmail,clProject,notesEl,paymentMethodEl,paymentTermEl,quoteDateEl,validDateEl].forEach(function(el){ el.disabled = !editable; });
+    modeIvaBtn.disabled = !editable; modeAiuBtn.disabled = !editable;
+    document.getElementById('btnAddItem').style.display = editable ? '' : 'none';
+    document.getElementById('btnSave').style.display = editable ? '' : 'none';
+  }
 
   // ---------- Company ----------
-  var DEFAULT_LOGO = "data:image/jpeg;base64,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";
-  var DEFAULT_COMPANY = {
-    name: "SOLUINGENIUS",
-    nit: "900.243.899-1",
-    address: "Calle 38a #5a-15",
-    phone: "3165230393",
-    email: "soluingenius.sas@gmail.com",
-    logo: DEFAULT_LOGO
-  };
-  var company = loadJSON(LS_COMPANY, DEFAULT_COMPANY);
+  var company = {name:"", nit:"", address:"", phone:"", email:"", logo:""};
 
   var coName = document.getElementById('coName');
   var coNit = document.getElementById('coNit');
@@ -606,52 +862,48 @@
     document.getElementById('viewCoPhone').textContent = company.phone || "Teléfono";
     document.getElementById('viewCoEmail').textContent = company.email || "Email";
   }
+
+  async function loadCompany(){
+    var rows = await sb('/company_settings?id=eq.1&select=*');
+    var row = rows && rows[0];
+    if(row){
+      company = { name:row.name||"", nit:row.nit||"", address:row.address||"", phone:row.phone||"", email:row.email||"", logo: row.logo_data_url || "" };
+    }
+    renderCompany();
+  }
+
+  async function saveCompanyField(field, value){
+    company[field] = value;
+    renderCompany();
+    var colMap = {name:'name', nit:'nit', address:'address', phone:'phone', email:'email', logo:'logo_data_url'};
+    var payload = {}; payload[colMap[field]] = value; payload.updated_at = new Date().toISOString();
+    try{ await sb('/company_settings?id=eq.1', {method:'PATCH', body: JSON.stringify(payload)}); }
+    catch(e){ alert('No se pudo guardar el dato de la empresa: ' + e.message); }
+  }
   [['name',coName],['nit',coNit],['address',coAddress],['phone',coPhone],['email',coEmail]].forEach(function(pair){
-    pair[1].addEventListener('input', function(){
-      company[pair[0]] = pair[1].value;
-      saveJSON(LS_COMPANY, company);
-      renderCompany();
-    });
+    pair[1].addEventListener('change', function(){ saveCompanyField(pair[0], pair[1].value); });
   });
   logoInput.addEventListener('change', function(){
     var file = logoInput.files && logoInput.files[0];
     if(!file) return;
     var reader = new FileReader();
-    reader.onload = function(){
-      company.logo = reader.result;
-      saveJSON(LS_COMPANY, company);
-      renderCompany();
-    };
+    reader.onload = function(){ saveCompanyField('logo', reader.result); };
     reader.readAsDataURL(file);
   });
-
-  // ---------- Consecutivo ----------
-  // El número se reserva (peek) mientras se edita y solo se confirma
-  // (incrementa el contador guardado) al guardar la cotización, para que
-  // abrir o recargar la app no queme números sin usar.
-  function counterKey(){ return LS_COUNTER_PREFIX + new Date().getFullYear(); }
-  function peekConsecutivo(){
-    var year = new Date().getFullYear();
-    var n = parseInt(localStorage.getItem(counterKey()) || "0", 10) + 1;
-    return year + "-" + String(n).padStart(4, "0");
-  }
-  function commitConsecutivo(){
-    var year = new Date().getFullYear();
-    var n = parseInt(localStorage.getItem(counterKey()) || "0", 10) + 1;
-    localStorage.setItem(counterKey(), String(n));
-    return year + "-" + String(n).padStart(4, "0");
-  }
 
   // ---------- State ----------
   var state = null;
 
   function blankQuote(){
     return {
-      number: peekConsecutivo(),
+      number: null,
       committed: false,
+      year: null,
+      seq: null,
       date: todayISO(),
       validUntil: "",
       client: {name:"", nit:"", manager:"", phone:"", address:"", email:""},
+      clientId: null,
       project: "",
       mode: "iva",
       items: [ {desc:"", unit:"und", qty:1, price:0} ],
@@ -686,16 +938,9 @@
   var footerNumber = document.getElementById('footerNumber');
 
   function renderHeaderBits(){
-    quoteNumberEl.textContent = state.number;
-    footerNumber.textContent = "Cotización " + state.number;
+    quoteNumberEl.textContent = state.number || 'Se asignará al guardar';
+    footerNumber.textContent = state.number ? ("Cotización " + state.number) : "";
     footerValid.textContent = state.validUntil ? formatDate(state.validUntil) : "—";
-  }
-  function formatDate(iso){
-    if(!iso) return "—";
-    var parts = iso.split("-");
-    if(parts.length!==3) return iso;
-    var meses = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
-    return parts[2] + " " + meses[parseInt(parts[1],10)-1] + " " + parts[0];
   }
 
   function renderClient(){
@@ -716,13 +961,11 @@
   clProject.addEventListener('input', function(){ state.project = clProject.value; });
 
   // ---------- Directorio de clientes ----------
-  function loadClients(){ return loadJSON(LS_CLIENTS, []); }
-  function saveClients(list){ saveJSON(LS_CLIENTS, list); }
-
   var clientSearchEl = document.getElementById('clientSearch');
   var clientsListEl = document.getElementById('clientsList');
   var clientModalOverlay = document.getElementById('clientModalOverlay');
   var clientModalTitle = document.getElementById('clientModalTitle');
+  var clientModalError = document.getElementById('clientModalError');
   var mClName = document.getElementById('mClName');
   var mClNit = document.getElementById('mClNit');
   var mClManager = document.getElementById('mClManager');
@@ -739,19 +982,25 @@
     state.client.phone = c.phone || "";
     state.client.address = c.address || "";
     state.client.email = c.email || "";
+    state.clientId = c.id || null;
     renderClient();
   }
 
-  function renderClientsList(){
-    var query = (clientSearchEl.value || "").trim().toLowerCase();
-    var clients = loadClients().slice().sort(function(a,b){ return (a.name||"").localeCompare(b.name||"", 'es'); });
+  async function fetchClients(query){
+    var path = '/clients?select=*&order=name.asc';
     if(query){
-      clients = clients.filter(function(c){
-        return (c.name||"").toLowerCase().indexOf(query) >= 0 ||
-               (c.nit||"").toLowerCase().indexOf(query) >= 0 ||
-               (c.manager||"").toLowerCase().indexOf(query) >= 0;
-      });
+      var term = encodeURIComponent(ilikeTerm(query));
+      path += '&or=(name.ilike.'+term+',nit.ilike.'+term+',manager.ilike.'+term+')';
     }
+    return await sb(path);
+  }
+
+  async function renderClientsList(){
+    var query = (clientSearchEl.value || "").trim();
+    var clients;
+    try{ clients = await fetchClients(query); }
+    catch(e){ clientsListEl.innerHTML = '<span class="empty-hint">Error al cargar clientes: '+e.message+'</span>'; return; }
+
     clientsListEl.innerHTML = "";
     if(!clients.length){
       clientsListEl.innerHTML = '<span class="empty-hint">'+(query ? 'Sin resultados.' : 'Aún no hay clientes guardados.')+'</span>';
@@ -769,17 +1018,22 @@
       main.addEventListener('click', function(){ applyClient(c); });
 
       var actions = document.createElement('div'); actions.className = 'client-actions';
-      var editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'icon-btn'; editBtn.title = 'Editar'; editBtn.textContent = '✎';
-      editBtn.addEventListener('click', function(e){ e.stopPropagation(); openClientModal(c); });
-      var delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'icon-btn danger'; delBtn.title = 'Eliminar'; delBtn.textContent = '✕';
-      delBtn.addEventListener('click', function(e){
-        e.stopPropagation();
-        if(confirm('¿Eliminar el cliente "'+(c.name||'')+'"?')){
-          saveClients(loadClients().filter(function(x){ return x.id !== c.id; }));
-          renderClientsList();
-        }
-      });
-      actions.appendChild(editBtn); actions.appendChild(delBtn);
+      if(CAN.clientEdit){
+        var editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'icon-btn'; editBtn.title = 'Editar'; editBtn.textContent = '✎';
+        editBtn.addEventListener('click', function(e){ e.stopPropagation(); openClientModal(c); });
+        actions.appendChild(editBtn);
+      }
+      if(CAN.clientDelete){
+        var delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'icon-btn danger'; delBtn.title = 'Eliminar'; delBtn.textContent = '✕';
+        delBtn.addEventListener('click', async function(e){
+          e.stopPropagation();
+          if(confirm('¿Eliminar el cliente "'+(c.name||'')+'"?')){
+            try{ await sb('/clients?id=eq.'+c.id, {method:'DELETE'}); renderClientsList(); }
+            catch(err){ alert('No se pudo eliminar: '+err.message); }
+          }
+        });
+        actions.appendChild(delBtn);
+      }
 
       row.appendChild(main); row.appendChild(actions);
       clientsListEl.appendChild(row);
@@ -789,13 +1043,14 @@
   function openClientModal(client){
     editingClientId = client ? client.id : null;
     clientModalTitle.textContent = client ? 'Editar cliente' : 'Nuevo cliente';
+    clientModalError.style.display = 'none';
     mClName.value = client ? (client.name || "") : "";
     mClNit.value = client ? (client.nit || "") : "";
     mClManager.value = client ? (client.manager || "") : "";
     mClPhone.value = client ? (client.phone || "") : "";
     mClEmail.value = client ? (client.email || "") : "";
     mClAddress.value = client ? (client.address || "") : "";
-    btnDeleteClient.style.display = client ? 'inline-flex' : 'none';
+    btnDeleteClient.style.display = (client && CAN.clientDelete) ? 'inline-flex' : 'none';
     clientModalOverlay.classList.add('open');
     mClName.focus();
   }
@@ -808,15 +1063,16 @@
   document.getElementById('btnCancelClient').addEventListener('click', closeClientModal);
   clientModalOverlay.addEventListener('click', function(e){ if(e.target === clientModalOverlay) closeClientModal(); });
   document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && clientModalOverlay.classList.contains('open')) closeClientModal();
+    if(e.key !== 'Escape') return;
+    [clientModalOverlay, document.getElementById('adminModalOverlay'), document.getElementById('newUserModalOverlay'), document.getElementById('newRoleModalOverlay')].forEach(function(ov){
+      if(ov.classList.contains('open')) ov.classList.remove('open');
+    });
   });
 
-  document.getElementById('btnSaveClient').addEventListener('click', function(){
+  document.getElementById('btnSaveClient').addEventListener('click', async function(){
     var name = mClName.value.trim();
     if(!name){ mClName.focus(); return; }
-    var list = loadClients();
     var data = {
-      id: editingClientId || (Date.now().toString(36) + Math.random().toString(36).slice(2,7)),
       name: name,
       nit: mClNit.value.trim(),
       manager: mClManager.value.trim(),
@@ -824,23 +1080,33 @@
       email: mClEmail.value.trim(),
       address: mClAddress.value.trim()
     };
-    var idx = list.findIndex(function(c){ return c.id === editingClientId; });
-    if(editingClientId && idx >= 0){ list[idx] = data; } else { list.push(data); }
-    saveClients(list);
-    closeClientModal();
-    renderClientsList();
-  });
-
-  btnDeleteClient.addEventListener('click', function(){
-    if(!editingClientId) return;
-    if(confirm('¿Eliminar este cliente?')){
-      saveClients(loadClients().filter(function(c){ return c.id !== editingClientId; }));
+    this.disabled = true;
+    try{
+      if(editingClientId){
+        data.updated_at = new Date().toISOString();
+        await sb('/clients?id=eq.'+editingClientId, {method:'PATCH', body: JSON.stringify(data)});
+      } else {
+        await sb('/clients', {method:'POST', body: JSON.stringify(data)});
+      }
       closeClientModal();
       renderClientsList();
+    }catch(e){
+      clientModalError.textContent = e.message;
+      clientModalError.style.display = '';
+    }finally{
+      this.disabled = false;
     }
   });
 
-  clientSearchEl.addEventListener('input', renderClientsList);
+  btnDeleteClient.addEventListener('click', async function(){
+    if(!editingClientId) return;
+    if(confirm('¿Eliminar este cliente?')){
+      try{ await sb('/clients?id=eq.'+editingClientId, {method:'DELETE'}); closeClientModal(); renderClientsList(); }
+      catch(e){ alert('No se pudo eliminar: '+e.message); }
+    }
+  });
+
+  clientSearchEl.addEventListener('input', debounce(function(){ renderClientsList(); }, 350));
 
   quoteDateEl.addEventListener('change', function(){ state.date = quoteDateEl.value; });
   validDateEl.addEventListener('change', function(){ state.validUntil = validDateEl.value; renderHeaderBits(); });
@@ -858,17 +1124,18 @@
   // ---------- Items ----------
   function renderItems(){
     itemsBody.innerHTML = "";
+    var editable = currentQuoteEditable();
     state.items.forEach(function(item, idx){
       var tr = document.createElement('tr');
 
       var tdIdx = document.createElement('td'); tdIdx.className = 'item-idx'; tdIdx.textContent = idx+1;
       var tdDesc = document.createElement('td');
-      var descInput = document.createElement('input'); descInput.value = item.desc; descInput.placeholder = "Descripción del ítem";
+      var descInput = document.createElement('input'); descInput.value = item.desc; descInput.placeholder = "Descripción del ítem"; descInput.disabled = !editable;
       descInput.addEventListener('input', function(){ item.desc = descInput.value; });
       tdDesc.appendChild(descInput);
 
       var tdUnit = document.createElement('td');
-      var unitSelect = document.createElement('select');
+      var unitSelect = document.createElement('select'); unitSelect.disabled = !editable;
       UNIT_OPTIONS.forEach(function(u){
         var opt = document.createElement('option');
         opt.value = u.value; opt.textContent = u.label;
@@ -879,12 +1146,12 @@
       tdUnit.appendChild(unitSelect);
 
       var tdQty = document.createElement('td'); tdQty.className = 'num';
-      var qtyInput = document.createElement('input'); qtyInput.className = 'qty'; qtyInput.type = 'number'; qtyInput.min = '0'; qtyInput.step = 'any'; qtyInput.value = item.qty;
+      var qtyInput = document.createElement('input'); qtyInput.className = 'qty'; qtyInput.type = 'number'; qtyInput.min = '0'; qtyInput.step = 'any'; qtyInput.value = item.qty; qtyInput.disabled = !editable;
       qtyInput.addEventListener('input', function(){ item.qty = parseFloat(qtyInput.value)||0; renderRowTotal(); renderTotals(); });
       tdQty.appendChild(qtyInput);
 
       var tdPrice = document.createElement('td'); tdPrice.className = 'num';
-      var priceInput = document.createElement('input'); priceInput.className = 'price'; priceInput.type = 'number'; priceInput.min = '0'; priceInput.step = 'any'; priceInput.value = item.price;
+      var priceInput = document.createElement('input'); priceInput.className = 'price'; priceInput.type = 'number'; priceInput.min = '0'; priceInput.step = 'any'; priceInput.value = item.price; priceInput.disabled = !editable;
       priceInput.addEventListener('input', function(){ item.price = parseFloat(priceInput.value)||0; renderRowTotal(); renderTotals(); });
       tdPrice.appendChild(priceInput);
 
@@ -893,12 +1160,14 @@
       renderRowTotal();
 
       var tdRm = document.createElement('td'); tdRm.className = 'rm';
-      var rmBtn = document.createElement('button'); rmBtn.className = 'rm-btn'; rmBtn.textContent = '✕'; rmBtn.title = 'Eliminar ítem';
-      rmBtn.addEventListener('click', function(){
-        if(state.items.length <= 1) return;
-        state.items.splice(idx,1); renderItems(); renderTotals();
-      });
-      tdRm.appendChild(rmBtn);
+      if(editable){
+        var rmBtn = document.createElement('button'); rmBtn.className = 'rm-btn'; rmBtn.textContent = '✕'; rmBtn.title = 'Eliminar ítem';
+        rmBtn.addEventListener('click', function(){
+          if(state.items.length <= 1) return;
+          state.items.splice(idx,1); renderItems(); renderTotals();
+        });
+        tdRm.appendChild(rmBtn);
+      }
 
       tr.appendChild(tdIdx); tr.appendChild(tdDesc); tr.appendChild(tdUnit);
       tr.appendChild(tdQty); tr.appendChild(tdPrice); tr.appendChild(tdTotal); tr.appendChild(tdRm);
@@ -917,6 +1186,7 @@
 
   function renderTotals(){
     var sub = subtotal();
+    var editable = currentQuoteEditable();
     totalsBox.innerHTML = "";
 
     function line(labelHtml, amount, opts){
@@ -937,7 +1207,7 @@
       var pctDiv = document.createElement('div');
       pctDiv.className = 'line pct-line';
       var lab = document.createElement('label');
-      lab.innerHTML = 'IVA <input type="number" min="0" step="any" id="ivaPctInput" value="'+state.ivaPercent+'"> %';
+      lab.innerHTML = 'IVA <input type="number" min="0" step="any" id="ivaPctInput" value="'+state.ivaPercent+'" '+(editable?'':'disabled')+'> %';
       var amt = document.createElement('span'); amt.className = 'amt';
       var ivaVal = sub * (state.ivaPercent/100);
       amt.textContent = fmt.format(ivaVal);
@@ -954,7 +1224,7 @@
         var pctDiv = document.createElement('div');
         pctDiv.className = 'line pct-line';
         var lab = document.createElement('label');
-        lab.innerHTML = labels[k] + ' <input type="number" min="0" step="any" class="aiuPct" data-k="'+k+'" value="'+state.aiu[k]+'"> %';
+        lab.innerHTML = labels[k] + ' <input type="number" min="0" step="any" class="aiuPct" data-k="'+k+'" value="'+state.aiu[k]+'" '+(editable?'':'disabled')+'> %';
         var amt = document.createElement('span'); amt.className = 'amt';
         var val = sub * (state.aiu[k]/100);
         amt.textContent = fmt.format(val);
@@ -974,7 +1244,7 @@
       var pctDiv2 = document.createElement('div');
       pctDiv2.className = 'line pct-line';
       var lab2 = document.createElement('label');
-      lab2.innerHTML = 'IVA sobre utilidad <input type="number" min="0" step="any" id="aiuIvaPctInput" value="'+state.aiuIvaPercent+'"> %';
+      lab2.innerHTML = 'IVA sobre utilidad <input type="number" min="0" step="any" id="aiuIvaPctInput" value="'+state.aiuIvaPercent+'" '+(editable?'':'disabled')+'> %';
       var amt2 = document.createElement('span'); amt2.className = 'amt';
       var ivaOnAiu = utilidadVal * (state.aiuIvaPercent/100);
       amt2.textContent = fmt.format(ivaOnAiu);
@@ -993,7 +1263,7 @@
     }
   }
 
-  // ---------- Save / Load / New ----------
+  // ---------- Render all / quotes list ----------
   function renderAll(){
     quoteDateEl.value = state.date;
     validDateEl.value = state.validUntil;
@@ -1005,65 +1275,115 @@
     notesEl.value = state.notes;
     paymentMethodEl.value = state.paymentMethod || "";
     paymentTermEl.value = state.paymentTerm || "";
+    refreshQuoteEditability();
   }
-
-  function listQuotes(){ return loadJSON(LS_QUOTES, []); }
 
   var quoteSearchTextEl = document.getElementById('quoteSearchText');
   var quoteSearchFromEl = document.getElementById('quoteSearchFrom');
   var quoteSearchToEl = document.getElementById('quoteSearchTo');
+  var quotesListEl = document.getElementById('quotesList');
 
-  function renderQuotesList(){
-    var textQuery = (quoteSearchTextEl.value || "").trim().toLowerCase();
+  async function fetchQuotes(){
+    var path = '/quotes?select=*&order=number.desc';
+    var textQuery = (quoteSearchTextEl.value||"").trim();
     var fromDate = quoteSearchFromEl.value;
     var toDate = quoteSearchToEl.value;
-    var hasFilter = !!(textQuery || fromDate || toDate);
+    if(textQuery){
+      var term = encodeURIComponent(ilikeTerm(textQuery));
+      path += '&or=(client->>name.ilike.'+term+',client->>nit.ilike.'+term+')';
+    }
+    if(fromDate) path += '&quote_date=gte.'+fromDate;
+    if(toDate) path += '&quote_date=lte.'+toDate;
+    return await sb(path);
+  }
 
-    var quotes = listQuotes().slice().sort(function(a,b){ return b.number.localeCompare(a.number); });
-    quotes = quotes.filter(function(q){
-      if(textQuery){
-        var hay = ((q.client && q.client.name || "") + " " + (q.client && q.client.nit || "")).toLowerCase();
-        if(hay.indexOf(textQuery) < 0) return false;
-      }
-      if(fromDate && (!q.date || q.date < fromDate)) return false;
-      if(toDate && (!q.date || q.date > toDate)) return false;
-      return true;
-    });
+  function loadQuoteIntoState(q){
+    state = {
+      number: q.number, committed: true, year: q.year, seq: q.seq,
+      date: q.quote_date || todayISO(), validUntil: q.valid_until || "",
+      client: q.client || {name:"",nit:"",manager:"",phone:"",address:"",email:""},
+      clientId: q.client_id || null,
+      project: q.project || "",
+      mode: q.mode || "iva",
+      items: (q.items && q.items.length) ? q.items : [{desc:"",unit:"und",qty:1,price:0}],
+      ivaPercent: q.iva_percent, aiu: q.aiu, aiuIvaPercent: q.aiu_iva_percent,
+      paymentMethod: q.payment_method || "", paymentTerm: q.payment_term || "",
+      notes: q.notes || ""
+    };
+    renderAll();
+  }
 
-    var box = document.getElementById('quotesList');
-    box.innerHTML = "";
+  async function renderQuotesList(){
+    quotesListEl.innerHTML = '<span class="empty-hint">Cargando…</span>';
+    var quotes;
+    try{ quotes = await fetchQuotes(); }
+    catch(e){ quotesListEl.innerHTML = '<span class="empty-hint">Error al cargar: '+e.message+'</span>'; return; }
+    var hasFilter = !!(quoteSearchTextEl.value.trim() || quoteSearchFromEl.value || quoteSearchToEl.value);
+    quotesListEl.innerHTML = "";
     if(!quotes.length){
-      box.innerHTML = '<span class="empty-hint">'+(hasFilter ? 'No hay cotizaciones que coincidan con la búsqueda.' : 'Aún no hay cotizaciones guardadas.')+'</span>';
+      quotesListEl.innerHTML = '<span class="empty-hint">'+(hasFilter?'No hay cotizaciones que coincidan con la búsqueda.':'Aún no hay cotizaciones guardadas.')+'</span>';
       return;
     }
     quotes.forEach(function(q){
       var b = document.createElement('button');
       b.className = 'quote-item';
-      var dateLabel = q.date ? formatDate(q.date) : 'sin fecha';
-      b.innerHTML = '<span class="num">'+q.number+' · '+dateLabel+'</span><span class="sub">'+(q.client.name || 'Sin cliente')+' · '+(q.client.nit || 'Sin NIT')+'</span>';
-      b.addEventListener('click', function(){
-        state = JSON.parse(JSON.stringify(q));
-        renderAll();
-      });
-      box.appendChild(b);
+      var dateLabel = q.quote_date ? formatDate(q.quote_date) : 'sin fecha';
+      b.innerHTML = '<span class="num"></span><span class="sub"></span>';
+      b.querySelector('.num').textContent = q.number + ' · ' + dateLabel;
+      b.querySelector('.sub').textContent = (q.client && q.client.name || 'Sin cliente') + ' · ' + (q.client && q.client.nit || 'Sin NIT');
+      b.addEventListener('click', function(){ loadQuoteIntoState(q); });
+      quotesListEl.appendChild(b);
     });
   }
 
-  document.getElementById('btnSave').addEventListener('click', function(){
-    if(!state.committed){
-      state.number = commitConsecutivo();
-      state.committed = true;
-      renderHeaderBits();
+  document.getElementById('btnSave').addEventListener('click', async function(){
+    var btn = this;
+    btn.disabled = true;
+    try{
+      if(!state.committed){
+        var year = new Date().getFullYear();
+        var rpcRes = await sb('/rpc/next_quote_number', {method:'POST', body: JSON.stringify({p_year: year})});
+        var row = rpcRes[0];
+        state.number = row.number;
+        state.year = year;
+        state.seq = row.seq;
+        state.committed = true;
+        renderHeaderBits();
+      }
+      var payload = {
+        number: state.number,
+        year: state.year || new Date().getFullYear(),
+        seq: state.seq || 0,
+        committed: true,
+        quote_date: state.date || null,
+        valid_until: state.validUntil || null,
+        client: state.client,
+        client_id: state.clientId || null,
+        project: state.project,
+        mode: state.mode,
+        items: state.items,
+        iva_percent: state.ivaPercent,
+        aiu: state.aiu,
+        aiu_iva_percent: state.aiuIvaPercent,
+        payment_method: state.paymentMethod,
+        payment_term: state.paymentTerm,
+        notes: state.notes,
+        updated_at: new Date().toISOString()
+      };
+      await sb('/quotes?on_conflict=number', {
+        method:'POST',
+        headers:{Prefer:'resolution=merge-duplicates,return=representation'},
+        body: JSON.stringify(payload)
+      });
+      await renderQuotesList();
+      var original = btn.textContent;
+      btn.textContent = 'Guardado ✓';
+      setTimeout(function(){ btn.textContent = original; }, 1200);
+    }catch(e){
+      alert('No se pudo guardar la cotización: ' + e.message);
+    }finally{
+      btn.disabled = false;
     }
-    var quotes = listQuotes();
-    var idx = quotes.findIndex(function(q){ return q.number === state.number; });
-    if(idx >= 0) quotes[idx] = state; else quotes.push(state);
-    saveJSON(LS_QUOTES, quotes);
-    renderQuotesList();
-    var btn = document.getElementById('btnSave');
-    var original = btn.textContent;
-    btn.textContent = 'Guardado ✓';
-    setTimeout(function(){ btn.textContent = original; }, 1200);
   });
 
   document.getElementById('btnNew').addEventListener('click', function(){
@@ -1084,11 +1404,262 @@
     renderQuotesList();
   });
 
+  // ---------- Admin: users & roles ----------
+  async function fetchRoles(){ return await sb('/roles?select=*&order=name.asc'); }
+  async function fetchUsers(){ return await sb('/profiles?select=*,roles(id,name)&order=email.asc'); }
+
+  async function renderUsersList(){
+    var box = document.getElementById('usersList');
+    box.innerHTML = '<span class="empty-hint">Cargando…</span>';
+    var users, roles;
+    try{
+      var results = await Promise.all([fetchUsers(), fetchRoles()]);
+      users = results[0]; roles = results[1];
+    }catch(e){ box.innerHTML = '<span class="empty-hint">Error: '+e.message+'</span>'; return; }
+
+    box.innerHTML = "";
+    users.forEach(function(u){
+      var row = document.createElement('div'); row.className = 'admin-row';
+      var who = document.createElement('div'); who.className = 'who';
+      who.innerHTML = '<span class="name"></span><span class="sub"></span>';
+      who.querySelector('.name').textContent = u.full_name || u.email;
+      who.querySelector('.sub').textContent = u.email;
+      row.appendChild(who);
+
+      var roleSel = document.createElement('select');
+      roles.forEach(function(r){
+        var opt = document.createElement('option'); opt.value = r.id; opt.textContent = r.name;
+        if(u.role_id === r.id) opt.selected = true;
+        roleSel.appendChild(opt);
+      });
+      roleSel.disabled = !CAN.usersEdit;
+      roleSel.addEventListener('change', async function(){
+        try{ await sb('/profiles?id=eq.'+u.id, {method:'PATCH', body: JSON.stringify({role_id: roleSel.value})}); }
+        catch(e){ alert('No se pudo cambiar el rol: '+e.message); }
+      });
+      row.appendChild(roleSel);
+
+      var toggleLabel = document.createElement('label'); toggleLabel.className = 'toggle';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!u.active;
+      cb.disabled = !CAN.usersEdit || (session && u.id === session.user.id);
+      cb.addEventListener('change', async function(){
+        try{ await sb('/profiles?id=eq.'+u.id, {method:'PATCH', body: JSON.stringify({active: cb.checked})}); }
+        catch(e){ alert('No se pudo actualizar: '+e.message); cb.checked = !cb.checked; }
+      });
+      toggleLabel.appendChild(cb);
+      toggleLabel.appendChild(document.createTextNode('Activo'));
+      row.appendChild(toggleLabel);
+
+      box.appendChild(row);
+    });
+
+    var nuRoleSel = document.getElementById('nuRole');
+    nuRoleSel.innerHTML = "";
+    roles.forEach(function(r){
+      var opt = document.createElement('option'); opt.value = r.id; opt.textContent = r.name;
+      nuRoleSel.appendChild(opt);
+    });
+  }
+
+  async function renderRolesList(){
+    var box = document.getElementById('rolesList');
+    box.innerHTML = '<span class="empty-hint">Cargando…</span>';
+    var roles;
+    try{ roles = await fetchRoles(); }
+    catch(e){ box.innerHTML = '<span class="empty-hint">Error: '+e.message+'</span>'; return; }
+
+    box.innerHTML = "";
+    roles.forEach(function(r){
+      var card = document.createElement('div'); card.className = 'role-card';
+      var head = document.createElement('div'); head.className = 'role-card-head';
+      var nameEl = document.createElement('span'); nameEl.className = 'name';
+      nameEl.textContent = r.name + (r.is_system ? ' (protegido)' : '');
+      head.appendChild(nameEl);
+      if(!r.is_system && CAN.usersEdit){
+        var delBtn = document.createElement('button'); delBtn.className = 'icon-btn danger'; delBtn.textContent = '✕'; delBtn.title = 'Eliminar rol';
+        delBtn.addEventListener('click', async function(){
+          if(!confirm('¿Eliminar el rol "'+r.name+'"? Los usuarios con este rol quedarán sin rol asignado.')) return;
+          try{ await sb('/roles?id=eq.'+r.id, {method:'DELETE'}); renderRolesList(); renderUsersList(); }
+          catch(e){ alert('No se pudo eliminar: '+e.message); }
+        });
+        head.appendChild(delBtn);
+      }
+      card.appendChild(head);
+
+      var table = document.createElement('table'); table.className = 'perm-table';
+      var thead = document.createElement('tr');
+      thead.innerHTML = '<th style="text-align:left;">Módulo</th>' + ALL_ACTIONS.map(function(a){ return '<th>'+ACTION_LABELS[a]+'</th>'; }).join('');
+      table.appendChild(thead);
+
+      MODULES.forEach(function(mod){
+        var tr = document.createElement('tr');
+        var tdLabel = document.createElement('td'); tdLabel.className = 'mod-label'; tdLabel.textContent = mod.label;
+        tr.appendChild(tdLabel);
+        ALL_ACTIONS.forEach(function(action){
+          var td = document.createElement('td');
+          if(mod.actions.indexOf(action) >= 0){
+            var cb = document.createElement('input'); cb.type = 'checkbox';
+            cb.checked = !!(r.permissions[mod.key] && r.permissions[mod.key][action]);
+            cb.disabled = r.is_system || !CAN.usersEdit;
+            cb.addEventListener('change', async function(){
+              var perms = JSON.parse(JSON.stringify(r.permissions || {}));
+              perms[mod.key] = perms[mod.key] || {};
+              perms[mod.key][action] = cb.checked;
+              try{
+                await sb('/roles?id=eq.'+r.id, {method:'PATCH', body: JSON.stringify({permissions:perms})});
+                r.permissions = perms;
+                if(CURRENT_PROFILE && CURRENT_PROFILE.role_id === r.id){ PERMS = perms; applyPermissionsToUI(); refreshQuoteEditability(); renderItems(); renderTotals(); }
+              }catch(e){ alert('No se pudo actualizar el permiso: '+e.message); cb.checked = !cb.checked; }
+            });
+            td.appendChild(cb);
+          }
+          tr.appendChild(td);
+        });
+        table.appendChild(tr);
+      });
+      card.appendChild(table);
+      box.appendChild(card);
+    });
+  }
+
+  var btnOpenAdmin = document.getElementById('btnOpenAdmin');
+  btnOpenAdmin.addEventListener('click', function(){
+    document.getElementById('adminModalOverlay').classList.add('open');
+    renderUsersList();
+    renderRolesList();
+  });
+  document.getElementById('btnCloseAdmin').addEventListener('click', function(){
+    document.getElementById('adminModalOverlay').classList.remove('open');
+  });
+  document.getElementById('adminModalOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('adminTabUsers').addEventListener('click', function(){
+    this.classList.add('active'); document.getElementById('adminTabRoles').classList.remove('active');
+    document.getElementById('adminUsersPane').style.display=''; document.getElementById('adminRolesPane').style.display='none';
+  });
+  document.getElementById('adminTabRoles').addEventListener('click', function(){
+    this.classList.add('active'); document.getElementById('adminTabUsers').classList.remove('active');
+    document.getElementById('adminRolesPane').style.display=''; document.getElementById('adminUsersPane').style.display='none';
+  });
+
+  document.getElementById('btnNewUser').addEventListener('click', function(){
+    document.getElementById('nuEmail').value='';
+    document.getElementById('nuFullName').value='';
+    var errEl = document.getElementById('nuError'); errEl.style.display='none';
+    document.getElementById('newUserModalOverlay').classList.add('open');
+  });
+  document.getElementById('btnCancelNewUser').addEventListener('click', function(){
+    document.getElementById('newUserModalOverlay').classList.remove('open');
+  });
+  document.getElementById('newUserModalOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('btnCreateUser').addEventListener('click', async function(){
+    var email = document.getElementById('nuEmail').value.trim();
+    var fullName = document.getElementById('nuFullName').value.trim();
+    var roleId = document.getElementById('nuRole').value;
+    var errEl = document.getElementById('nuError');
+    errEl.style.display='none';
+    if(!email || !roleId){ errEl.textContent='Falta correo o rol.'; errEl.style.display=''; return; }
+    this.disabled = true;
+    try{
+      var res = await fetch('/api/create-user', {
+        method:'POST',
+        headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+session.access_token},
+        body: JSON.stringify({email:email, full_name:fullName, role_id:roleId})
+      });
+      var data = await res.json();
+      if(!res.ok) throw new Error(data.error || 'No se pudo crear el usuario');
+      document.getElementById('newUserModalOverlay').classList.remove('open');
+      renderUsersList();
+      alert('Usuario creado.\n\nCorreo: '+data.email+'\nContraseña temporal: '+data.tempPassword+'\n\nCompártela de forma segura; el usuario debería cambiarla después de iniciar sesión.');
+    }catch(e){
+      errEl.textContent = e.message; errEl.style.display='';
+    }finally{
+      this.disabled = false;
+    }
+  });
+
+  document.getElementById('btnNewRole').addEventListener('click', function(){
+    document.getElementById('nrName').value='';
+    document.getElementById('newRoleModalOverlay').classList.add('open');
+  });
+  document.getElementById('btnCancelNewRole').addEventListener('click', function(){
+    document.getElementById('newRoleModalOverlay').classList.remove('open');
+  });
+  document.getElementById('newRoleModalOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('btnCreateRole').addEventListener('click', async function(){
+    var name = document.getElementById('nrName').value.trim();
+    if(!name) return;
+    try{
+      await sb('/roles', {method:'POST', body: JSON.stringify({name:name, permissions:{}, is_system:false})});
+      document.getElementById('newRoleModalOverlay').classList.remove('open');
+      renderRolesList();
+    }catch(e){ alert('No se pudo crear el rol: '+e.message); }
+  });
+
+  // ---------- Login / logout ----------
+  function showLogin(){
+    document.getElementById('authOverlay').classList.add('open');
+    document.getElementById('appRoot').style.display = 'none';
+  }
+  function hideLogin(){
+    document.getElementById('authOverlay').classList.remove('open');
+    document.getElementById('appRoot').style.display = '';
+  }
+  document.getElementById('btnLogin').addEventListener('click', async function(){
+    var email = document.getElementById('authEmail').value.trim();
+    var pw = document.getElementById('authPassword').value;
+    var errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+    if(!email || !pw) return;
+    this.disabled = true;
+    try{
+      await login(email, pw);
+      location.reload();
+    }catch(e){
+      errEl.textContent = e.message;
+      errEl.style.display = '';
+    }finally{
+      this.disabled = false;
+    }
+  });
+  document.getElementById('authPassword').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') document.getElementById('btnLogin').click();
+  });
+  document.getElementById('btnLogout').addEventListener('click', function(){
+    if(confirm('¿Cerrar sesión?')) logout();
+  });
+
+  function renderCurrentUserBox(){
+    var roleName = (CURRENT_PROFILE.roles && CURRENT_PROFILE.roles.name) || '';
+    document.getElementById('currentUserName').textContent = CURRENT_PROFILE.full_name || CURRENT_PROFILE.email;
+    document.getElementById('currentUserRole').textContent = roleName;
+  }
+
   // ---------- Init ----------
-  renderCompany();
-  state = blankQuote();
-  renderAll();
-  renderQuotesList();
-  renderClientsList();
+  async function init(){
+    session = await ensureSession();
+    if(!session){ showLogin(); return; }
+    try{
+      await loadMyProfile();
+    }catch(e){
+      alert(e.message);
+      logout();
+      return;
+    }
+    hideLogin();
+    applyPermissionsToUI();
+    renderCurrentUserBox();
+    try{ await loadCompany(); }catch(e){ /* company.view may be false */ }
+    state = blankQuote();
+    renderAll();
+    renderQuotesList();
+    renderClientsList();
+  }
+  init();
 })();
 </script>
