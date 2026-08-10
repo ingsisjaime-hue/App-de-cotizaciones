@@ -57,11 +57,12 @@ module.exports = async function handler(req, res) {
 
     // 3. Parse and validate the request body.
     const body = req.body || {};
+    const username = (body.username || '').trim();
     const email = (body.email || '').trim();
     const fullName = (body.full_name || '').trim();
     const roleId = body.role_id;
-    if (!email || !roleId) {
-      res.status(400).json({ error: 'Falta correo o rol.' });
+    if (!username || !email || !roleId) {
+      res.status(400).json({ error: 'Falta usuario, correo o rol.' });
       return;
     }
 
@@ -93,15 +94,21 @@ module.exports = async function handler(req, res) {
         'Content-Type': 'application/json',
         Prefer: 'return=representation'
       },
-      body: JSON.stringify({ id: created.id, email, full_name: fullName, role_id: roleId, active: true })
+      body: JSON.stringify({ id: created.id, username, email, full_name: fullName, role_id: roleId, active: true })
     });
     if (!profResp.ok) {
       const errText = await profResp.text();
-      res.status(500).json({ error: 'Usuario creado pero no se pudo asignar el rol: ' + errText });
+      // Roll back the auth user so a failed creation doesn't leave an orphaned account.
+      await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${created.id}`, {
+        method: 'DELETE',
+        headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` }
+      }).catch(() => {});
+      const friendly = /duplicate|unique/i.test(errText) ? 'Ese nombre de usuario ya está en uso.' : errText;
+      res.status(400).json({ error: friendly });
       return;
     }
 
-    res.status(200).json({ email, tempPassword });
+    res.status(200).json({ username, email, tempPassword });
   } catch (err) {
     res.status(500).json({ error: err.message || 'Error inesperado.' });
   }

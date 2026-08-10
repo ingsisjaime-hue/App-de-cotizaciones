@@ -375,7 +375,7 @@
 <div class="modal-overlay open" id="authOverlay">
   <div class="modal">
     <h3>Iniciar sesión</h3>
-    <div class="field"><label>Correo</label><input type="email" id="authEmail" autocomplete="username"></div>
+    <div class="field"><label>Usuario</label><input type="text" id="authUsername" autocomplete="username"></div>
     <div class="field"><label>Contraseña</label><input type="password" id="authPassword" autocomplete="current-password"></div>
     <p class="auth-error" id="authError"></p>
     <div class="modal-actions">
@@ -390,6 +390,7 @@
 
     <div class="user-box">
       <span class="who"><strong id="currentUserName">—</strong><span id="currentUserRole"></span></span>
+      <button class="btn small ghost" id="btnMyAccount" title="Cambiar usuario o contraseña">⚙</button>
       <button class="btn small ghost" id="btnLogout">Salir</button>
     </div>
 
@@ -637,7 +638,8 @@
 <div class="modal-overlay" id="newUserModalOverlay">
   <div class="modal" style="max-width:380px;">
     <h3>Nuevo usuario</h3>
-    <div class="field"><label>Correo</label><input type="email" id="nuEmail"></div>
+    <div class="field"><label>Usuario (para iniciar sesión)</label><input id="nuUsername" placeholder="usuario"></div>
+    <div class="field"><label>Correo</label><input type="email" id="nuEmail" placeholder="correo@empresa.com"></div>
     <div class="field"><label>Nombre</label><input id="nuFullName"></div>
     <div class="field"><label>Rol</label><select id="nuRole"></select></div>
     <p class="auth-error" id="nuError"></p>
@@ -655,6 +657,20 @@
     <div class="modal-actions">
       <button class="btn" id="btnCancelNewRole">Cancelar</button>
       <button class="btn primary" id="btnCreateRole">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="accountModalOverlay">
+  <div class="modal" style="max-width:380px;">
+    <h3>Mi cuenta</h3>
+    <div class="field"><label>Usuario</label><input id="acUsername" placeholder="usuario"></div>
+    <div class="field"><label>Nueva contraseña</label><input type="password" id="acNewPassword" placeholder="Dejar en blanco para no cambiarla"></div>
+    <div class="field"><label>Confirmar nueva contraseña</label><input type="password" id="acNewPassword2"></div>
+    <p class="auth-error" id="acError"></p>
+    <div class="modal-actions">
+      <button class="btn" id="btnCancelAccount">Cancelar</button>
+      <button class="btn primary" id="btnSaveAccount">Guardar</button>
     </div>
   </div>
 </div>
@@ -713,6 +729,18 @@
     opts = opts || {};
     var headers = Object.assign({apikey:SUPABASE_ANON_KEY, 'Content-Type':'application/json'}, opts.headers||{});
     return fetch(SUPABASE_URL + path, Object.assign({}, opts, {headers:headers}));
+  }
+
+  async function resolveUsernameToEmail(username){
+    var res = await authFetch('/rest/v1/rpc/email_for_username', {
+      method:'POST',
+      headers:{apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+SUPABASE_ANON_KEY},
+      body: JSON.stringify({p_username: username})
+    });
+    var data = await res.json();
+    if(!res.ok) throw new Error('No se pudo verificar el usuario.');
+    if(!data) throw new Error('Usuario o contraseña incorrectos.');
+    return data;
   }
 
   async function login(email, password){
@@ -1064,7 +1092,7 @@
   clientModalOverlay.addEventListener('click', function(e){ if(e.target === clientModalOverlay) closeClientModal(); });
   document.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
-    [clientModalOverlay, document.getElementById('adminModalOverlay'), document.getElementById('newUserModalOverlay'), document.getElementById('newRoleModalOverlay')].forEach(function(ov){
+    [clientModalOverlay, document.getElementById('adminModalOverlay'), document.getElementById('newUserModalOverlay'), document.getElementById('newRoleModalOverlay'), document.getElementById('accountModalOverlay')].forEach(function(ov){
       if(ov.classList.contains('open')) ov.classList.remove('open');
     });
   });
@@ -1422,7 +1450,7 @@
       var row = document.createElement('div'); row.className = 'admin-row';
       var who = document.createElement('div'); who.className = 'who';
       who.innerHTML = '<span class="name"></span><span class="sub"></span>';
-      who.querySelector('.name').textContent = u.full_name || u.email;
+      who.querySelector('.name').textContent = (u.full_name || u.username || u.email) + (u.username ? ' · '+u.username : '');
       who.querySelector('.sub').textContent = u.email;
       row.appendChild(who);
 
@@ -1544,6 +1572,7 @@
   });
 
   document.getElementById('btnNewUser').addEventListener('click', function(){
+    document.getElementById('nuUsername').value='';
     document.getElementById('nuEmail').value='';
     document.getElementById('nuFullName').value='';
     var errEl = document.getElementById('nuError'); errEl.style.display='none';
@@ -1556,24 +1585,25 @@
     if(e.target === this) this.classList.remove('open');
   });
   document.getElementById('btnCreateUser').addEventListener('click', async function(){
+    var username = document.getElementById('nuUsername').value.trim();
     var email = document.getElementById('nuEmail').value.trim();
     var fullName = document.getElementById('nuFullName').value.trim();
     var roleId = document.getElementById('nuRole').value;
     var errEl = document.getElementById('nuError');
     errEl.style.display='none';
-    if(!email || !roleId){ errEl.textContent='Falta correo o rol.'; errEl.style.display=''; return; }
+    if(!username || !email || !roleId){ errEl.textContent='Falta usuario, correo o rol.'; errEl.style.display=''; return; }
     this.disabled = true;
     try{
       var res = await fetch('/api/create-user', {
         method:'POST',
         headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+session.access_token},
-        body: JSON.stringify({email:email, full_name:fullName, role_id:roleId})
+        body: JSON.stringify({username:username, email:email, full_name:fullName, role_id:roleId})
       });
       var data = await res.json();
       if(!res.ok) throw new Error(data.error || 'No se pudo crear el usuario');
       document.getElementById('newUserModalOverlay').classList.remove('open');
       renderUsersList();
-      alert('Usuario creado.\n\nCorreo: '+data.email+'\nContraseña temporal: '+data.tempPassword+'\n\nCompártela de forma segura; el usuario debería cambiarla después de iniciar sesión.');
+      alert('Usuario creado.\n\nUsuario: '+data.username+'\nContraseña temporal: '+data.tempPassword+'\n\nCompártela de forma segura; el usuario puede cambiar su usuario y contraseña desde el botón ⚙ junto a su nombre.');
     }catch(e){
       errEl.textContent = e.message; errEl.style.display='';
     }finally{
@@ -1611,13 +1641,14 @@
     document.getElementById('appRoot').style.display = '';
   }
   document.getElementById('btnLogin').addEventListener('click', async function(){
-    var email = document.getElementById('authEmail').value.trim();
+    var username = document.getElementById('authUsername').value.trim();
     var pw = document.getElementById('authPassword').value;
     var errEl = document.getElementById('authError');
     errEl.style.display = 'none';
-    if(!email || !pw) return;
+    if(!username || !pw) return;
     this.disabled = true;
     try{
+      var email = await resolveUsernameToEmail(username);
       await login(email, pw);
       location.reload();
     }catch(e){
@@ -1636,9 +1667,64 @@
 
   function renderCurrentUserBox(){
     var roleName = (CURRENT_PROFILE.roles && CURRENT_PROFILE.roles.name) || '';
-    document.getElementById('currentUserName').textContent = CURRENT_PROFILE.full_name || CURRENT_PROFILE.email;
+    document.getElementById('currentUserName').textContent = CURRENT_PROFILE.full_name || CURRENT_PROFILE.username || CURRENT_PROFILE.email;
     document.getElementById('currentUserRole').textContent = roleName;
   }
+
+  // ---------- Mi cuenta (usuario / contraseña propios) ----------
+  document.getElementById('btnMyAccount').addEventListener('click', function(){
+    document.getElementById('acUsername').value = CURRENT_PROFILE.username || '';
+    document.getElementById('acNewPassword').value = '';
+    document.getElementById('acNewPassword2').value = '';
+    document.getElementById('acError').style.display = 'none';
+    document.getElementById('accountModalOverlay').classList.add('open');
+  });
+  document.getElementById('btnCancelAccount').addEventListener('click', function(){
+    document.getElementById('accountModalOverlay').classList.remove('open');
+  });
+  document.getElementById('accountModalOverlay').addEventListener('click', function(e){
+    if(e.target === this) this.classList.remove('open');
+  });
+  document.getElementById('btnSaveAccount').addEventListener('click', async function(){
+    var newUsername = document.getElementById('acUsername').value.trim();
+    var newPw = document.getElementById('acNewPassword').value;
+    var newPw2 = document.getElementById('acNewPassword2').value;
+    var errEl = document.getElementById('acError');
+    errEl.style.display = 'none';
+
+    if(!newUsername){ errEl.textContent = 'El usuario no puede quedar vacío.'; errEl.style.display=''; return; }
+    if(newPw || newPw2){
+      if(newPw.length < 6){ errEl.textContent = 'La nueva contraseña debe tener al menos 6 caracteres.'; errEl.style.display=''; return; }
+      if(newPw !== newPw2){ errEl.textContent = 'Las contraseñas no coinciden.'; errEl.style.display=''; return; }
+    }
+
+    this.disabled = true;
+    try{
+      if(newUsername !== CURRENT_PROFILE.username){
+        await sb('/profiles?id=eq.'+CURRENT_PROFILE.id, {method:'PATCH', body: JSON.stringify({username:newUsername})});
+        CURRENT_PROFILE.username = newUsername;
+        renderCurrentUserBox();
+      }
+      if(newPw){
+        var res = await fetch(SUPABASE_URL + '/auth/v1/user', {
+          method:'PUT',
+          headers:{apikey:SUPABASE_ANON_KEY, Authorization:'Bearer '+session.access_token, 'Content-Type':'application/json'},
+          body: JSON.stringify({password:newPw})
+        });
+        var data = await res.json();
+        if(!res.ok) throw new Error(data.msg || data.error_description || 'No se pudo cambiar la contraseña.');
+      }
+      document.getElementById('accountModalOverlay').classList.remove('open');
+      alert('Datos de la cuenta actualizados.');
+    }catch(e){
+      var msg = e.message || '';
+      if(/duplicate|unique/i.test(msg)) msg = 'Ese nombre de usuario ya está en uso.';
+      errEl.textContent = msg;
+      errEl.style.display = '';
+    }finally{
+      this.disabled = false;
+    }
+  });
 
   // ---------- Init ----------
   async function init(){
