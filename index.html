@@ -1290,7 +1290,7 @@
     var toDate = quoteSearchToEl.value;
     if(textQuery){
       var term = encodeURIComponent(ilikeTerm(textQuery));
-      path += '&or=(client->>name.ilike.'+term+',client->>nit.ilike.'+term+')';
+      path += '&or=(client-%3E%3Ename.ilike.'+term+',client-%3E%3Enit.ilike.'+term+')';
     }
     if(fromDate) path += '&quote_date=gte.'+fromDate;
     if(toDate) path += '&quote_date=lte.'+toDate;
