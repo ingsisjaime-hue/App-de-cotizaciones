@@ -825,6 +825,10 @@
   <div class="modal" style="max-width:860px; padding:0; background:transparent; box-shadow:none;">
     <div style="max-height:92vh; overflow:auto; display:flex; flex-direction:column; gap:12px;">
       <div class="toolbar" style="justify-content:flex-end;">
+        <button class="btn primary" id="btnPrintFromPreview" style="flex:none;">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>
+          Imprimir / Exportar a PDF
+        </button>
         <button class="btn" id="btnClosePreview" style="flex:none;">Cerrar</button>
       </div>
       <div class="sheet" id="previewSheet" style="margin:0 0 4px;"></div>
@@ -1658,6 +1662,9 @@
   });
   document.getElementById('btnClosePreview').addEventListener('click', function(){
     document.getElementById('previewOverlay').classList.remove('open');
+  });
+  document.getElementById('btnPrintFromPreview').addEventListener('click', function(){
+    window.print();
   });
   document.getElementById('previewOverlay').addEventListener('click', function(e){
     if(e.target === this) this.classList.remove('open');
