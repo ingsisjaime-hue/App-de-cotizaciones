@@ -247,27 +247,56 @@
 
   @media (max-width:960px){ .admin-layout{ grid-template-columns:1fr; } }
 
-  /* ---------- Estadísticas tab ---------- */
-  .stats-layout{ max-width:920px; margin:0 auto; padding:28px; }
-  .stats-summary{ display:flex; gap:16px; margin-bottom:24px; }
-  .stats-tile{ flex:1; background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px 18px; }
-  .stats-tile .lbl{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); }
-  .stats-tile .val{ font-size:1.5rem; font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; margin-top:4px; }
+  /* ---------- Estadísticas tab (dashboard) ---------- */
+  .stats-layout{ max-width:1040px; margin:0 auto; padding:28px; }
+  .stats-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px; }
+  .stats-tile{ background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px 18px; }
+  .stats-tile .lbl{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); }
+  .stats-tile .val{ font-size:1.4rem; font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; margin-top:4px; }
+
+  .stats-charts{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+  .chart-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg);
+    padding:20px 22px; box-shadow:var(--shadow);
+  }
+  .chart-card h3{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); margin:0 0 18px; font-weight:700; }
+
+  .mode-bar-row{ display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+  .mode-bar-row:last-child{ margin-bottom:0; }
+  .mode-bar-label{ width:64px; flex:none; font-size:.8rem; font-weight:600; color:var(--ink); }
+  .mode-bar-track{ flex:1; height:10px; background:var(--paper-2); border-radius:6px; overflow:hidden; }
+  .mode-bar-fill{ height:100%; border-radius:6px; background:var(--accent); width:0; transition:width .3s ease; }
+  .mode-bar-fill.aiu{ background:var(--gold); }
+  .mode-bar-value{ width:130px; flex:none; text-align:right; font-size:.76rem; color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+
+  .trend-chart{ display:flex; align-items:flex-end; gap:10px; height:132px; }
+  .trend-bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+  .trend-bar{ width:100%; max-width:30px; background:var(--accent); border-radius:6px 6px 2px 2px; min-height:3px; }
+  .trend-bar-label{ font-size:.65rem; color:var(--ink-soft); white-space:nowrap; }
+
   .stats-card{ border:1px solid var(--line); border-radius:var(--radius-md); background:var(--paper); margin-bottom:10px; overflow:hidden; }
   .stats-card-head{
-    width:100%; display:flex; align-items:center; gap:14px; padding:12px 16px; border:none;
+    width:100%; display:flex; flex-direction:column; gap:8px; padding:12px 16px; border:none;
     background:transparent; cursor:pointer; font:inherit; text-align:left;
   }
   .stats-card-head:hover{ background:var(--paper-2); }
+  .stats-card-top{ display:flex; align-items:center; gap:14px; width:100%; }
   .stats-client{ flex:1; font-weight:700; color:var(--ink); font-size:.88rem; }
   .stats-count{ color:var(--ink-soft); font-size:.78rem; white-space:nowrap; }
   .stats-amt{ font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; min-width:120px; text-align:right; }
+  .client-bar-track{ height:6px; background:var(--paper-2); border-radius:4px; overflow:hidden; }
+  .client-bar-fill{ height:100%; background:var(--accent); border-radius:4px; width:0; transition:width .3s ease; }
   .stats-detail{ border-top:1px solid var(--line); padding:4px 16px; }
   .stats-detail-row{ display:flex; gap:14px; padding:6px 0; font-size:.78rem; color:var(--ink-soft); border-bottom:1px dashed var(--line); }
   .stats-detail-row:last-child{ border-bottom:none; }
   .stats-detail-row span:first-child{ font-weight:600; color:var(--ink); width:100px; flex:none; }
   .stats-detail-row span:nth-child(2){ flex:1; }
   .stats-detail-row span:last-child{ font-variant-numeric:tabular-nums; color:var(--ink); }
+
+  @media (max-width:900px){
+    .stats-kpis{ grid-template-columns:1fr 1fr; }
+    .stats-charts{ grid-template-columns:1fr; }
+  }
 
   /* ---------- Cotización tab ---------- */
   .quote-layout{ display:flex; align-items:flex-start; }
@@ -508,6 +537,10 @@
             <button class="btn small" id="btnSearchQuotes">Buscar</button>
             <button class="btn small ghost" id="btnClearQuoteSearch">Limpiar</button>
           </div>
+          <button class="btn small ghost" id="btnExportExcel" style="width:100%; margin-bottom:14px;">
+            <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span>
+            Exportar a Excel
+          </button>
           <div class="quotes-list" id="quotesList">
             <span class="empty-hint">Cargando…</span>
           </div>
@@ -703,7 +736,8 @@
 
     <section id="paneStats" class="tab-pane">
       <div class="stats-layout">
-        <div class="stats-summary">
+
+        <div class="stats-kpis">
           <div class="stats-tile">
             <div class="lbl">Cotizaciones</div>
             <div class="val" id="statsTotalCount">0</div>
@@ -712,7 +746,36 @@
             <div class="lbl">Valor total consolidado</div>
             <div class="val" id="statsTotalValue">$0</div>
           </div>
+          <div class="stats-tile">
+            <div class="lbl">Valor promedio</div>
+            <div class="val" id="statsAvgValue">$0</div>
+          </div>
+          <div class="stats-tile">
+            <div class="lbl">Clientes cotizados</div>
+            <div class="val" id="statsClientCount">0</div>
+          </div>
         </div>
+
+        <div class="stats-charts">
+          <div class="chart-card">
+            <h3>Cotizaciones por modalidad</h3>
+            <div class="mode-bar-row">
+              <span class="mode-bar-label">Con IVA</span>
+              <div class="mode-bar-track"><div class="mode-bar-fill" id="modeIvaBar"></div></div>
+              <span class="mode-bar-value" id="modeIvaValue">0 · $0</span>
+            </div>
+            <div class="mode-bar-row">
+              <span class="mode-bar-label">Con AIU</span>
+              <div class="mode-bar-track"><div class="mode-bar-fill aiu" id="modeAiuBar"></div></div>
+              <span class="mode-bar-value" id="modeAiuValue">0 · $0</span>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Tendencia mensual (valor cotizado)</h3>
+            <div class="trend-chart" id="trendChart"></div>
+          </div>
+        </div>
+
         <h2 class="block-title">Cotizaciones por cliente</h2>
         <div id="statsBody">
           <span class="empty-hint">Cargando…</span>
@@ -856,7 +919,8 @@
     trash: '<svg '+ICON_SVG_ATTRS+'><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
     gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>',
     search: '<svg '+ICON_SVG_ATTRS+'><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
-    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>'
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+    download: '<svg '+ICON_SVG_ATTRS+'><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>'
   };
   function iconTag(name){ return '<span class="icon">'+ICONS[name]+'</span>'; }
 
@@ -1664,6 +1728,54 @@
     });
   }
 
+  // ---------- Exportar cotizaciones a Excel ----------
+  function csvEscape(v){
+    var s = (v==null?'':String(v));
+    if(/[";\n]/.test(s)) s = '"' + s.replace(/"/g,'""') + '"';
+    return s;
+  }
+  function buildQuotesCsv(quotes){
+    var headers = ['Número','Fecha','Cliente','NIT','Proyecto','Modalidad','Forma de pago','Plazo (días)','Valor total'];
+    var lines = [headers.map(csvEscape).join(';')];
+    quotes.forEach(function(q){
+      var row = [
+        q.number || '',
+        q.quote_date ? formatDate(q.quote_date) : '',
+        (q.client && q.client.name) || '',
+        (q.client && q.client.nit) || '',
+        q.project || '',
+        q.mode === 'aiu' ? 'AIU' : 'IVA',
+        q.payment_method || '',
+        q.payment_term || '',
+        Math.round(computeQuoteTotal(q))
+      ];
+      lines.push(row.map(csvEscape).join(';'));
+    });
+    return lines.join('\r\n');
+  }
+  function downloadTextFile(filename, content, mime){
+    var blob = new Blob(['﻿' + content], {type: mime});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  document.getElementById('btnExportExcel').addEventListener('click', async function(){
+    var btn = this;
+    btn.disabled = true;
+    try{
+      var quotes = await fetchQuotes();
+      if(!quotes.length){ alert('No hay cotizaciones para exportar con la búsqueda actual.'); return; }
+      var csv = buildQuotesCsv(quotes);
+      downloadTextFile('cotizaciones_'+todayISO()+'.csv', csv, 'text/csv;charset=utf-8;');
+    }catch(e){
+      alert('No se pudo exportar: ' + e.message);
+    }finally{
+      btn.disabled = false;
+    }
+  });
+
   document.getElementById('btnSave').addEventListener('click', async function(){
     var btn = this;
     btn.disabled = true;
@@ -1762,6 +1874,8 @@
     return sub + ivaVal;
   }
 
+  var MESES_CORTOS = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
   async function renderStats(){
     var box = document.getElementById('statsBody');
     box.innerHTML = '<span class="empty-hint">Cargando…</span>';
@@ -1771,9 +1885,13 @@
 
     var totalGeneral = 0;
     var groups = {};
+    var modeStats = { iva:{count:0,value:0}, aiu:{count:0,value:0} };
+    var monthly = {};
+
     quotes.forEach(function(q){
       var total = computeQuoteTotal(q);
       totalGeneral += total;
+
       var c = q.client || {};
       var key = c.nit || c.name || 'sin-cliente';
       if(!groups[key]){
@@ -1782,24 +1900,77 @@
       groups[key].count++;
       groups[key].total += total;
       groups[key].items.push({number:q.number, date:q.quote_date, total:total});
+
+      var m = q.mode === 'aiu' ? 'aiu' : 'iva';
+      modeStats[m].count++;
+      modeStats[m].value += total;
+
+      if(q.quote_date){
+        var ym = q.quote_date.slice(0,7);
+        monthly[ym] = (monthly[ym] || 0) + total;
+      }
     });
 
-    document.getElementById('statsTotalCount').textContent = quotes.length;
-    document.getElementById('statsTotalValue').textContent = fmt.format(totalGeneral);
-
+    var count = quotes.length;
+    var avg = count ? totalGeneral / count : 0;
     var rows = Object.keys(groups).map(function(k){ return groups[k]; }).sort(function(a,b){ return b.total - a.total; });
+
+    document.getElementById('statsTotalCount').textContent = count;
+    document.getElementById('statsTotalValue').textContent = fmt.format(totalGeneral);
+    document.getElementById('statsAvgValue').textContent = fmt.format(avg);
+    document.getElementById('statsClientCount').textContent = rows.length;
+
+    // ---- Gráfico: cotizaciones por modalidad ----
+    var modeMax = Math.max(modeStats.iva.value, modeStats.aiu.value, 1);
+    document.getElementById('modeIvaBar').style.width = (modeStats.iva.value/modeMax*100) + '%';
+    document.getElementById('modeAiuBar').style.width = (modeStats.aiu.value/modeMax*100) + '%';
+    document.getElementById('modeIvaValue').textContent = modeStats.iva.count + ' · ' + fmt.format(modeStats.iva.value);
+    document.getElementById('modeAiuValue').textContent = modeStats.aiu.count + ' · ' + fmt.format(modeStats.aiu.value);
+
+    // ---- Gráfico: tendencia mensual ----
+    var trendBox = document.getElementById('trendChart');
+    trendBox.innerHTML = '';
+    var months = Object.keys(monthly).sort().slice(-6);
+    if(!months.length){
+      trendBox.innerHTML = '<span class="empty-hint">Sin datos suficientes.</span>';
+    } else {
+      var maxVal = Math.max.apply(null, months.map(function(m){ return monthly[m]; }));
+      months.forEach(function(m){
+        var val = monthly[m];
+        var h = maxVal ? Math.max(4, Math.round(val/maxVal*110)) : 4;
+        var parts = m.split('-');
+        var label = MESES_CORTOS[parseInt(parts[1],10)-1] + ' ' + parts[0].slice(2);
+        var col = document.createElement('div'); col.className = 'trend-bar-col';
+        var bar = document.createElement('div'); bar.className = 'trend-bar'; bar.style.height = h+'px'; bar.title = fmt.format(val);
+        var lbl = document.createElement('div'); lbl.className = 'trend-bar-label'; lbl.textContent = label;
+        col.appendChild(bar); col.appendChild(lbl);
+        trendBox.appendChild(col);
+      });
+    }
+
+    // ---- Cotizaciones por cliente ----
     box.innerHTML = "";
     if(!rows.length){
       box.innerHTML = '<span class="empty-hint">Aún no hay cotizaciones guardadas.</span>';
       return;
     }
+    var maxClientVal = rows[0].total || 1;
     rows.forEach(function(g){
       var card = document.createElement('div'); card.className = 'stats-card';
       var head = document.createElement('button'); head.type = 'button'; head.className = 'stats-card-head';
-      head.innerHTML = '<span class="stats-client"></span><span class="stats-count"></span><span class="stats-amt"></span>';
-      head.querySelector('.stats-client').textContent = g.name + (g.nit ? ' · '+g.nit : '');
-      head.querySelector('.stats-count').textContent = g.count + (g.count===1?' cotización':' cotizaciones');
-      head.querySelector('.stats-amt').textContent = fmt.format(g.total);
+
+      var top = document.createElement('div'); top.className = 'stats-card-top';
+      top.innerHTML = '<span class="stats-client"></span><span class="stats-count"></span><span class="stats-amt"></span>';
+      top.querySelector('.stats-client').textContent = g.name + (g.nit ? ' · '+g.nit : '');
+      top.querySelector('.stats-count').textContent = g.count + (g.count===1?' cotización':' cotizaciones');
+      top.querySelector('.stats-amt').textContent = fmt.format(g.total);
+
+      var barTrack = document.createElement('div'); barTrack.className = 'client-bar-track';
+      var barFill = document.createElement('div'); barFill.className = 'client-bar-fill';
+      barFill.style.width = (g.total/maxClientVal*100) + '%';
+      barTrack.appendChild(barFill);
+
+      head.appendChild(top); head.appendChild(barTrack);
 
       var detail = document.createElement('div'); detail.className = 'stats-detail'; detail.style.display = 'none';
       g.items.sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); }).forEach(function(it){
