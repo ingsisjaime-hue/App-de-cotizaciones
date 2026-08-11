@@ -14,6 +14,12 @@
     --line:#d8d0bd;
     --danger:#a3402f;
     --shadow:0 18px 45px -22px rgba(20,30,28,.45);
+    --radius-sm:9px;
+    --radius-md:14px;
+    --radius-lg:20px;
+    --mica: rgba(241,237,226,.66);
+    --acrylic: rgba(251,249,244,.72);
+    --acrylic-line: rgba(255,255,255,.55);
     color-scheme: light;
   }
   @media (prefers-color-scheme: dark){
@@ -31,18 +37,25 @@
       --line:#2d3d3a;
       --danger:#e08a76;
       --shadow:0 18px 45px -18px rgba(0,0,0,.6);
+      --mica: rgba(27,41,39,.58);
+      --acrylic: rgba(21,34,32,.66);
+      --acrylic-line: rgba(255,255,255,.08);
       color-scheme: dark;
     }
   }
   :root[data-theme="dark"]{
     --ink:#eae6da; --ink-soft:#a9b8b3; --paper:#152220; --paper-2:#1b2927; --paper-3:#22322f;
     --accent:#57bd9f; --accent-ink:#8bd9c1; --accent-soft:#1d3733; --gold:#d9ac54; --gold-soft:#332a17;
-    --line:#2d3d3a; --danger:#e08a76; --shadow:0 18px 45px -18px rgba(0,0,0,.6); color-scheme:dark;
+    --line:#2d3d3a; --danger:#e08a76; --shadow:0 18px 45px -18px rgba(0,0,0,.6);
+    --mica: rgba(27,41,39,.58); --acrylic: rgba(21,34,32,.66); --acrylic-line: rgba(255,255,255,.08);
+    color-scheme:dark;
   }
   :root[data-theme="light"]{
     --ink:#1c2b2a; --ink-soft:#48605c; --paper:#fbf9f4; --paper-2:#f1ede2; --paper-3:#e8e1cd;
     --accent:#1f6f5c; --accent-ink:#14463a; --accent-soft:#e4efe9; --gold:#a9781f; --gold-soft:#f3e9d2;
-    --line:#d8d0bd; --danger:#a3402f; --shadow:0 18px 45px -22px rgba(20,30,28,.45); color-scheme:light;
+    --line:#d8d0bd; --danger:#a3402f; --shadow:0 18px 45px -22px rgba(20,30,28,.45);
+    --mica: rgba(241,237,226,.66); --acrylic: rgba(251,249,244,.72); --acrylic-line: rgba(255,255,255,.55);
+    color-scheme:light;
   }
 
   *{box-sizing:border-box;}
@@ -57,7 +70,10 @@
   /* ---------- Top bar / tabs ---------- */
   .topbar{
     display:flex; align-items:center; gap:24px; padding:13px 24px;
-    background:var(--paper-2); border-bottom:1px solid var(--line);
+    background:var(--mica);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border-bottom:1px solid var(--line);
     position:sticky; top:0; z-index:20;
   }
   .brand{
@@ -66,13 +82,13 @@
     font-size:1.05rem; letter-spacing:.02em;
   }
   .brand .mark{
-    width:30px;height:30px;border-radius:7px;background:var(--accent);
+    width:30px;height:30px;border-radius:var(--radius-sm);background:var(--accent);
     display:flex;align-items:center;justify-content:center;color:var(--paper);
     font-family:Georgia,serif; font-weight:700; font-size:.9rem; flex:none;
   }
   .tabs{ display:flex; gap:4px; flex:1; }
   .tab-btn{
-    font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border:none; border-radius:8px;
+    font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border:none; border-radius:var(--radius-sm);
     background:transparent; color:var(--ink-soft); cursor:pointer;
   }
   .tab-btn:hover{ background:var(--paper); color:var(--ink); }
@@ -95,7 +111,7 @@
     font:inherit; font-size:.86rem;
     padding:7px 9px;
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:var(--radius-sm);
     background:var(--paper);
     color:var(--ink);
   }
@@ -107,14 +123,14 @@
   }
   .logo-row{ display:flex; align-items:center; gap:10px; }
   .logo-preview{
-    height:52px;min-width:52px;max-width:120px;border-radius:8px;border:1px dashed var(--line);
+    height:52px;min-width:52px;max-width:120px;border-radius:var(--radius-md);border:1px dashed var(--line);
     display:flex;align-items:center;justify-content:center;overflow:hidden;
     background:var(--paper); flex:none; padding:0 6px;
   }
   .logo-preview img{ max-width:100%; max-height:100%; object-fit:contain; }
   .btn{
     font:inherit; font-size:.82rem; font-weight:600;
-    padding:8px 12px; border-radius:7px; border:1px solid var(--line);
+    padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--line);
     background:var(--paper); color:var(--ink); cursor:pointer;
     display:inline-flex; align-items:center; gap:6px; justify-content:center;
   }
@@ -125,6 +141,9 @@
   .btn.small{ padding:4px 9px; font-size:.75rem; }
   .btn:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
   .btn[disabled]{ opacity:.45; cursor:not-allowed; }
+  .icon{ display:inline-flex; flex:none; }
+  .icon svg{ width:15px; height:15px; }
+  .btn .icon svg{ width:14px; height:14px; }
 
   .row2{ display:flex; gap:8px; }
   .row2 > *{ flex:1; min-width:0; }
@@ -134,7 +153,7 @@
   .quotes-list, .clients-list{ display:flex; flex-direction:column; gap:6px; max-height:220px; overflow:auto; }
   .quote-item{
     text-align:left; border:1px solid var(--line); background:var(--paper);
-    border-radius:7px; padding:7px 9px; cursor:pointer; font-size:.78rem;
+    border-radius:var(--radius-sm); padding:7px 9px; cursor:pointer; font-size:.78rem;
   }
   .quote-item:hover{ border-color:var(--accent); }
   .quote-item .num{ font-weight:700; color:var(--accent-ink); }
@@ -143,7 +162,7 @@
 
   .client-item{
     display:flex; align-items:stretch; gap:2px;
-    border:1px solid var(--line); background:var(--paper); border-radius:7px;
+    border:1px solid var(--line); background:var(--paper); border-radius:var(--radius-sm);
     padding-right:4px;
   }
   .client-item:hover{ border-color:var(--accent); }
@@ -156,18 +175,26 @@
   .client-actions{ display:flex; align-items:center; gap:2px; flex:none; }
   .icon-btn{
     border:none; background:transparent; color:var(--ink-soft); cursor:pointer;
-    width:24px; height:24px; border-radius:5px; font-size:.82rem; flex:none;
+    width:26px; height:26px; border-radius:var(--radius-sm); flex:none;
+    display:inline-flex; align-items:center; justify-content:center;
   }
+  .icon-btn svg{ width:14px; height:14px; }
   .icon-btn:hover{ background:var(--gold-soft); color:var(--accent-ink); }
   .icon-btn.danger:hover{ color:var(--danger); }
 
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(10,16,15,.5);
+    position:fixed; inset:0; background:rgba(10,16,15,.42);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
     display:none; align-items:center; justify-content:center; padding:20px; z-index:50;
   }
   .modal-overlay.open{ display:flex; }
   .modal{
-    background:var(--paper); border-radius:12px; box-shadow:var(--shadow);
+    background:var(--acrylic);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border:1px solid var(--acrylic-line);
+    border-radius:var(--radius-lg); box-shadow:var(--shadow);
     width:100%; max-width:420px; padding:22px; display:flex; flex-direction:column;
     max-height:90vh; overflow:auto;
   }
@@ -190,7 +217,7 @@
     max-width:1120px; margin:0 auto; padding:28px;
   }
   .admin-block{
-    background:var(--paper); border:1px solid var(--line); border-radius:12px;
+    background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-lg);
     padding:22px 24px; box-shadow:var(--shadow);
   }
   .block-title{
@@ -200,15 +227,15 @@
   .admin-list{ display:flex; flex-direction:column; gap:8px; max-height:52vh; overflow:auto; }
   .admin-row{
     display:flex; align-items:center; gap:10px; border:1px solid var(--line);
-    border-radius:8px; padding:8px 10px; font-size:.82rem;
+    border-radius:var(--radius-sm); padding:8px 10px; font-size:.82rem;
   }
   .admin-row .who{ flex:1; min-width:0; }
   .admin-row .who .name{ font-weight:700; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .admin-row .who .sub{ color:var(--ink-soft); font-size:.76rem; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .admin-row select{ font:inherit; font-size:.78rem; padding:5px 7px; border:1px solid var(--line); border-radius:6px; background:var(--paper); color:var(--ink); max-width:150px; }
+  .admin-row select{ font:inherit; font-size:.78rem; padding:5px 7px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--paper); color:var(--ink); max-width:150px; }
   .admin-row label.toggle{ display:flex; align-items:center; gap:5px; font-size:.76rem; white-space:nowrap; color:var(--ink-soft); }
 
-  .role-card{ border:1px solid var(--line); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+  .role-card{ border:1px solid var(--line); border-radius:var(--radius-md); padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
   .role-card-head{ display:flex; align-items:center; gap:8px; }
   .role-card-head .name{ font-weight:700; flex:1; font-size:.9rem; }
   table.perm-table{ width:100%; border-collapse:collapse; font-size:.74rem; }
@@ -221,10 +248,10 @@
   /* ---------- Estadísticas tab ---------- */
   .stats-layout{ max-width:920px; margin:0 auto; padding:28px; }
   .stats-summary{ display:flex; gap:16px; margin-bottom:24px; }
-  .stats-tile{ flex:1; background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .stats-tile{ flex:1; background:var(--paper); border:1px solid var(--line); border-radius:var(--radius-md); padding:16px 18px; }
   .stats-tile .lbl{ font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); }
   .stats-tile .val{ font-size:1.5rem; font-weight:700; color:var(--accent-ink); font-variant-numeric:tabular-nums; margin-top:4px; }
-  .stats-card{ border:1px solid var(--line); border-radius:10px; background:var(--paper); margin-bottom:10px; overflow:hidden; }
+  .stats-card{ border:1px solid var(--line); border-radius:var(--radius-md); background:var(--paper); margin-bottom:10px; overflow:hidden; }
   .stats-card-head{
     width:100%; display:flex; align-items:center; gap:14px; padding:12px 16px; border:none;
     background:transparent; cursor:pointer; font:inherit; text-align:left;
@@ -243,7 +270,11 @@
   /* ---------- Cotización tab ---------- */
   .quote-layout{ display:flex; align-items:flex-start; }
   .quote-side{
-    width:300px; flex:0 0 300px; background:var(--paper-2); border-right:1px solid var(--line);
+    width:300px; flex:0 0 300px;
+    background:var(--mica);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-right:1px solid var(--line);
     padding:20px 20px 40px; display:flex; flex-direction:column; gap:4px;
     position:sticky; top:60px; max-height:calc(100vh - 60px); overflow-y:auto;
   }
@@ -257,7 +288,7 @@
   .sheet{
     width:100%; max-width:820px;
     background:var(--paper);
-    border-radius:10px;
+    border-radius:var(--radius-lg);
     box-shadow:var(--shadow);
     padding:40px 46px 46px;
     display:flex; flex-direction:column; gap:26px;
@@ -269,7 +300,7 @@
   }
   .doc-header .company{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
   .doc-logo{
-    height:64px; min-width:64px; max-width:180px; border-radius:10px; overflow:hidden; flex:none;
+    height:64px; min-width:64px; max-width:180px; border-radius:var(--radius-md); overflow:hidden; flex:none;
     display:flex; align-items:center; justify-content:center;
     background:var(--accent-soft); color:var(--accent-ink); padding:0 8px;
     font-family:Georgia,serif; font-weight:700; font-size:1.4rem;
@@ -287,7 +318,7 @@
   .quote-badge{
     font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
     background:var(--accent-soft); color:var(--accent-ink);
-    border:1px solid var(--accent); border-radius:8px;
+    border:1px solid var(--accent); border-radius:var(--radius-sm);
     padding:8px 14px; text-align:right;
   }
   .quote-badge .lbl{ font-size:.65rem; text-transform:uppercase; letter-spacing:.09em; display:block; opacity:.85;}
@@ -311,7 +342,7 @@
   .client-grid .field.span3{ grid-column:span 3; }
 
   .mode-toggle{
-    display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; align-self:flex-start;
+    display:inline-flex; border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; align-self:flex-start;
   }
   .mode-toggle button{
     font:inherit; font-size:.82rem; font-weight:600; padding:8px 16px; border:none; cursor:pointer;
@@ -334,7 +365,7 @@
   table.items th.num, table.items td.num{ text-align:right; }
   table.items input, table.items select{
     width:100%; border:1px solid transparent; background:transparent; font:inherit;
-    color:var(--ink); padding:5px 6px; border-radius:5px; font-variant-numeric:tabular-nums;
+    color:var(--ink); padding:5px 6px; border-radius:7px; font-variant-numeric:tabular-nums;
   }
   table.items input:hover, table.items select:hover{ border-color:var(--line); }
   table.items input:focus, table.items select:focus{ outline:none; border-color:var(--accent); background:var(--paper-2); }
@@ -344,9 +375,11 @@
   td.item-idx{ color:var(--ink-soft); font-variant-numeric:tabular-nums; width:28px; }
   td.rm{ width:30px; text-align:center; }
   .rm-btn{
-    border:none; background:transparent; color:var(--ink-soft); cursor:pointer; font-size:.95rem;
-    width:22px;height:22px;border-radius:5px;
+    border:none; background:transparent; color:var(--ink-soft); cursor:pointer;
+    width:24px;height:24px;border-radius:7px;
+    display:inline-flex; align-items:center; justify-content:center;
   }
+  .rm-btn svg{ width:13px; height:13px; }
   .rm-btn:hover{ background:var(--gold-soft); color:var(--danger); }
 
   .totals-wrap{ display:flex; justify-content:flex-end; }
@@ -359,13 +392,13 @@
   .totals .line .amt{ font-variant-numeric:tabular-nums; }
   .totals .line.pct-line label{ color:var(--ink-soft); display:flex; align-items:center; gap:6px; }
   .totals .line.pct-line input{
-    width:52px; text-align:right; border:1px solid var(--line); border-radius:5px;
+    width:52px; text-align:right; border:1px solid var(--line); border-radius:7px;
     font:inherit; font-size:.8rem; padding:2px 5px; background:var(--paper); color:var(--ink);
   }
   .totals hr{ border:none; border-top:1px solid var(--line); margin:2px 0; }
   .totals .line.grand{
     font-size:1.05rem; font-weight:700; color:var(--accent-ink);
-    background:var(--accent-soft); padding:9px 12px; border-radius:8px; margin-top:2px;
+    background:var(--accent-soft); padding:9px 12px; border-radius:var(--radius-sm); margin-top:2px;
   }
   .aiu-note{ font-size:.7rem; color:var(--ink-soft); font-style:italic; margin-top:2px; }
 
@@ -432,7 +465,7 @@
     </nav>
     <div class="user-box">
       <span class="who"><strong id="currentUserName">—</strong><span id="currentUserRole"></span></span>
-      <button class="btn small ghost" id="btnMyAccount" title="Cambiar usuario o contraseña">⚙</button>
+      <button class="btn small ghost" id="btnMyAccount" title="Cambiar usuario o contraseña"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg></span></button>
       <button class="btn small ghost" id="btnLogout">Salir</button>
     </div>
   </header>
@@ -443,7 +476,7 @@
       <div class="quote-layout">
         <aside class="quote-side">
           <div class="toolbar">
-            <button class="btn primary" id="btnNew">+ Nueva</button>
+            <button class="btn primary" id="btnNew"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nueva</button>
             <button class="btn" id="btnSave">Guardar</button>
           </div>
           <div class="toolbar" style="margin-top:8px;">
@@ -506,7 +539,7 @@
             <div>
               <p class="section-title">Cliente</p>
               <div class="toolbar" style="max-width:220px; margin:10px 0 2px;">
-                <button class="btn small ghost" type="button" id="btnPickClient">🔍 Buscar cliente</button>
+                <button class="btn small ghost" type="button" id="btnPickClient"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span> Buscar cliente</button>
               </div>
               <div class="client-grid" style="margin-top:10px;">
                 <div class="field"><label>Nombre del cliente</label><input id="clName" placeholder="Razón social / nombre"></div>
@@ -545,7 +578,7 @@
                   <tbody id="itemsBody"></tbody>
                 </table>
               </div>
-              <button class="btn small ghost" id="btnAddItem" style="margin-top:10px;">+ Agregar ítem</button>
+              <button class="btn small ghost" id="btnAddItem" style="margin-top:10px;"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Agregar ítem</button>
             </div>
 
             <div class="totals-wrap">
@@ -623,7 +656,7 @@
         <div class="admin-block" id="blockClients">
           <div class="toolbar" style="justify-content:space-between; margin-bottom:14px;">
             <h2 class="block-title" style="margin:0;">Clientes</h2>
-            <button class="btn small primary" id="btnNewClient" style="flex:none;">+ Nuevo cliente</button>
+            <button class="btn small primary" id="btnNewClient" style="flex:none;"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nuevo cliente</button>
           </div>
           <div class="field"><input type="text" id="clientSearch" placeholder="Buscar por nombre o NIT…"></div>
           <div class="clients-list" id="clientsList" style="max-height:400px;">
@@ -640,14 +673,14 @@
 
           <div id="adminUsersPane">
             <div class="toolbar" style="margin-bottom:12px; max-width:220px;">
-              <button class="btn small primary" id="btnNewUser" type="button">+ Nuevo usuario</button>
+              <button class="btn small primary" id="btnNewUser" type="button"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nuevo usuario</button>
             </div>
             <div id="usersList" class="admin-list"></div>
           </div>
 
           <div id="adminRolesPane" style="display:none;">
             <div class="toolbar" style="margin-bottom:12px; max-width:220px;">
-              <button class="btn small primary" id="btnNewRole" type="button">+ Nuevo rol</button>
+              <button class="btn small primary" id="btnNewRole" type="button"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></span> Nuevo rol</button>
             </div>
             <div id="rolesList" class="admin-list"></div>
           </div>
@@ -803,6 +836,17 @@
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
+
+  // ---------- Iconos minimalistas (SVG, trazo, sin relleno) ----------
+  var ICON_SVG_ATTRS = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"';
+  var ICONS = {
+    edit: '<svg '+ICON_SVG_ATTRS+'><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    trash: '<svg '+ICON_SVG_ATTRS+'><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
+    gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 0 1 0-4h.09a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>',
+    search: '<svg '+ICON_SVG_ATTRS+'><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+    plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>'
+  };
+  function iconTag(name){ return '<span class="icon">'+ICONS[name]+'</span>'; }
 
   // ---------- Auth / session ----------
   var session = null;
@@ -1166,12 +1210,12 @@
       main.title = 'Editar cliente';
       main.addEventListener('click', function(){ if(CAN.clientEdit) openClientModal(c); });
       if(CAN.clientEdit){
-        var editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'icon-btn'; editBtn.title = 'Editar'; editBtn.textContent = '✎';
+        var editBtn = document.createElement('button'); editBtn.type = 'button'; editBtn.className = 'icon-btn'; editBtn.title = 'Editar'; editBtn.innerHTML = ICONS.edit;
         editBtn.addEventListener('click', function(e){ e.stopPropagation(); openClientModal(c); });
         actions.appendChild(editBtn);
       }
       if(CAN.clientDelete){
-        var delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'icon-btn danger'; delBtn.title = 'Eliminar'; delBtn.textContent = '✕';
+        var delBtn = document.createElement('button'); delBtn.type = 'button'; delBtn.className = 'icon-btn danger'; delBtn.title = 'Eliminar'; delBtn.innerHTML = ICONS.trash;
         delBtn.addEventListener('click', async function(e){
           e.stopPropagation();
           if(confirm('¿Eliminar el cliente "'+(c.name||'')+'"?')){
@@ -1355,7 +1399,7 @@
 
       var tdRm = document.createElement('td'); tdRm.className = 'rm';
       if(editable){
-        var rmBtn = document.createElement('button'); rmBtn.className = 'rm-btn'; rmBtn.textContent = '✕'; rmBtn.title = 'Eliminar ítem';
+        var rmBtn = document.createElement('button'); rmBtn.className = 'rm-btn'; rmBtn.innerHTML = ICONS.trash; rmBtn.title = 'Eliminar ítem';
         rmBtn.addEventListener('click', function(){
           if(state.items.length <= 1) return;
           state.items.splice(idx,1); renderItems(); renderTotals();
@@ -1839,7 +1883,7 @@
       nameEl.textContent = r.name + (r.is_system ? ' (protegido)' : '');
       head.appendChild(nameEl);
       if(!r.is_system && CAN.usersEdit){
-        var delBtn = document.createElement('button'); delBtn.className = 'icon-btn danger'; delBtn.textContent = '✕'; delBtn.title = 'Eliminar rol';
+        var delBtn = document.createElement('button'); delBtn.className = 'icon-btn danger'; delBtn.innerHTML = ICONS.trash; delBtn.title = 'Eliminar rol';
         delBtn.addEventListener('click', async function(){
           if(!confirm('¿Eliminar el rol "'+r.name+'"? Los usuarios con este rol quedarán sin rol asignado.')) return;
           try{ await sb('/roles?id=eq.'+r.id, {method:'DELETE'}); renderRolesList(); renderUsersList(); }
@@ -1928,7 +1972,7 @@
       if(!res.ok) throw new Error(data.error || 'No se pudo crear el usuario');
       document.getElementById('newUserModalOverlay').classList.remove('open');
       renderUsersList();
-      alert('Usuario creado.\n\nUsuario: '+data.username+'\nContraseña temporal: '+data.tempPassword+'\n\nCompártela de forma segura; el usuario puede cambiar su usuario y contraseña desde el botón ⚙ junto a su nombre.');
+      alert('Usuario creado.\n\nUsuario: '+data.username+'\nContraseña temporal: '+data.tempPassword+'\n\nCompártela de forma segura; el usuario puede cambiarla desde "Mi cuenta", junto a su nombre.');
     }catch(e){
       errEl.textContent = e.message; errEl.style.display='';
     }finally{
