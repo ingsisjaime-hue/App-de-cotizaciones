@@ -464,6 +464,7 @@
     body{ background:#fff; }
     table.items input, .totals input, .field input, .field textarea{ border-color:transparent !important; }
     .modalidad-block{ display:none !important; }
+    #btnAddItem, .rm-btn, td.rm, th.rm-col{ display:none !important; }
     @page{ size: letter; margin: 10mm; }
   }
   @media (max-width: 900px){
@@ -618,7 +619,7 @@
                       <th class="num" style="width:70px;">Cant.</th>
                       <th class="num" style="width:120px;">Valor unit.</th>
                       <th class="num" style="width:120px;">Valor total</th>
-                      <th style="width:30px;"></th>
+                      <th class="rm-col" style="width:30px;"></th>
                     </tr>
                   </thead>
                   <tbody id="itemsBody"></tbody>
