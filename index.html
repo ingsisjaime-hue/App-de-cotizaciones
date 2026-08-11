@@ -457,14 +457,16 @@
   .doc-footer .valid{ font-weight:600; color:var(--ink); }
 
   @media print{
-    .topbar, .quote-side{ display:none !important; }
-    .modal-overlay{ display:none !important; }
-    .sheet-wrap{ padding:0; }
-    .sheet{ box-shadow:none; border-radius:0; max-width:none; width:100%; padding:6mm 8mm; }
+    /* Se imprime siempre la versión de solo texto (#printTarget, la misma
+       que arma la Vista previa) en vez del formulario editable, para que
+       las descripciones largas se vean completas y no las recorte un
+       <input> de una sola línea. */
+    body > *:not(#printTarget){ display:none !important; }
+    #printTarget{
+      display:flex !important; flex-direction:column; gap:26px;
+      box-shadow:none; border-radius:0; max-width:none; width:100%; padding:6mm 8mm; margin:0;
+    }
     body{ background:#fff; }
-    table.items input, .totals input, .field input, .field textarea{ border-color:transparent !important; }
-    .modalidad-block{ display:none !important; }
-    #btnAddItem, .rm-btn, td.rm, th.rm-col{ display:none !important; }
     @page{ size: letter; margin: 20mm 10mm 10mm 10mm; }
   }
   @media (max-width: 900px){
@@ -835,6 +837,8 @@
     </div>
   </div>
 </div>
+
+<div id="printTarget" class="sheet" style="display:none;"></div>
 
 <div class="modal-overlay" id="newUserModalOverlay">
   <div class="modal" style="max-width:380px;">
@@ -1663,9 +1667,11 @@
   document.getElementById('btnClosePreview').addEventListener('click', function(){
     document.getElementById('previewOverlay').classList.remove('open');
   });
-  document.getElementById('btnPrintFromPreview').addEventListener('click', function(){
+  function printQuote(){
+    document.getElementById('printTarget').innerHTML = buildPreviewMarkup();
     window.print();
-  });
+  }
+  document.getElementById('btnPrintFromPreview').addEventListener('click', printQuote);
   document.getElementById('previewOverlay').addEventListener('click', function(e){
     if(e.target === this) this.classList.remove('open');
   });
@@ -1856,9 +1862,7 @@
     renderAll();
   });
 
-  document.getElementById('btnPrint').addEventListener('click', function(){
-    window.print();
-  });
+  document.getElementById('btnPrint').addEventListener('click', printQuote);
 
   document.getElementById('btnSearchQuotes').addEventListener('click', renderQuotesList);
   quoteSearchTextEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') renderQuotesList(); });
