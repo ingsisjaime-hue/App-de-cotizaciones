@@ -504,10 +504,6 @@
           <div class="field">
             <input type="text" id="quoteSearchText" placeholder="Buscar por nombre o NIT…">
           </div>
-          <div class="row2">
-            <div class="field"><label>Desde</label><input type="date" id="quoteSearchFrom"></div>
-            <div class="field"><label>Hasta</label><input type="date" id="quoteSearchTo"></div>
-          </div>
           <div class="toolbar" style="margin-bottom:10px;">
             <button class="btn small" id="btnSearchQuotes">Buscar</button>
             <button class="btn small ghost" id="btnClearQuoteSearch">Limpiar</button>
@@ -1617,21 +1613,15 @@
   }
 
   var quoteSearchTextEl = document.getElementById('quoteSearchText');
-  var quoteSearchFromEl = document.getElementById('quoteSearchFrom');
-  var quoteSearchToEl = document.getElementById('quoteSearchTo');
   var quotesListEl = document.getElementById('quotesList');
 
   async function fetchQuotes(){
     var path = '/quotes?select=*&order=number.desc';
     var textQuery = (quoteSearchTextEl.value||"").trim();
-    var fromDate = quoteSearchFromEl.value;
-    var toDate = quoteSearchToEl.value;
     if(textQuery){
       var term = encodeURIComponent(ilikeTerm(textQuery));
       path += '&or=(client-%3E%3Ename.ilike.'+term+',client-%3E%3Enit.ilike.'+term+')';
     }
-    if(fromDate) path += '&quote_date=gte.'+fromDate;
-    if(toDate) path += '&quote_date=lte.'+toDate;
     return await sb(path);
   }
 
@@ -1656,7 +1646,7 @@
     var quotes;
     try{ quotes = await fetchQuotes(); }
     catch(e){ quotesListEl.innerHTML = '<span class="empty-hint">Error al cargar: '+e.message+'</span>'; return; }
-    var hasFilter = !!(quoteSearchTextEl.value.trim() || quoteSearchFromEl.value || quoteSearchToEl.value);
+    var hasFilter = !!quoteSearchTextEl.value.trim();
     quotesListEl.innerHTML = "";
     if(!quotes.length){
       quotesListEl.innerHTML = '<span class="empty-hint">'+(hasFilter?'No hay cotizaciones que coincidan con la búsqueda.':'Aún no hay cotizaciones guardadas.')+'</span>';
@@ -1754,8 +1744,6 @@
   quoteSearchTextEl.addEventListener('keydown', function(e){ if(e.key === 'Enter') renderQuotesList(); });
   document.getElementById('btnClearQuoteSearch').addEventListener('click', function(){
     quoteSearchTextEl.value = "";
-    quoteSearchFromEl.value = "";
-    quoteSearchToEl.value = "";
     renderQuotesList();
   });
 
