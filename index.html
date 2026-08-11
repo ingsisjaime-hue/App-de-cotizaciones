@@ -308,6 +308,7 @@
     font-family:Georgia,serif; font-weight:700; font-size:1.4rem;
   }
   .doc-logo img{ max-width:100%; max-height:100%; object-fit:contain; }
+  .doc-logo.has-logo, .logo-preview.has-logo{ background:transparent; }
   .company-info h1{
     font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
     font-size:1.32rem; margin:0 0 4px; text-wrap:balance; color:var(--ink);
@@ -1062,9 +1063,13 @@
     if(company.logo){
       logoPreview.innerHTML = '<img src="'+company.logo+'" alt="Logo">';
       docLogo.innerHTML = '<img src="'+company.logo+'" alt="Logo">';
+      logoPreview.classList.add('has-logo');
+      docLogo.classList.add('has-logo');
     } else {
       logoPreview.textContent = initial;
       docLogo.textContent = initial;
+      logoPreview.classList.remove('has-logo');
+      docLogo.classList.remove('has-logo');
     }
     document.getElementById('viewCoName').textContent = company.name || "Nombre de la empresa";
     document.getElementById('viewCoAddress').textContent = company.address || "Dirección de la empresa";
@@ -1544,11 +1549,12 @@
     }).join('');
 
     var logoHtml = company.logo ? '<img src="'+company.logo+'" alt="Logo">' : escapeHtml((company.name||'?').trim().charAt(0).toUpperCase()||'?');
+    var logoClass = 'doc-logo' + (company.logo ? ' has-logo' : '');
 
     return ''
       + '<div class="doc-header">'
       +   '<div class="company">'
-      +     '<div class="doc-logo">'+logoHtml+'</div>'
+      +     '<div class="'+logoClass+'">'+logoHtml+'</div>'
       +     '<div class="company-info">'
       +       '<h1>'+escapeHtml(company.name||'Nombre de la empresa')+'</h1>'
       +       '<p>'+(company.nit?('NIT '+escapeHtml(company.nit)):'NIT')+'</p>'
