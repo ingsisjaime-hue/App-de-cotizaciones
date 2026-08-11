@@ -76,18 +76,9 @@
     border-bottom:1px solid var(--line);
     position:sticky; top:0; z-index:20;
   }
-  .brand{
-    display:flex; align-items:center; gap:10px; flex:none;
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
-    font-size:1.05rem; letter-spacing:.02em;
-  }
-  .brand .mark{
-    width:30px;height:30px;border-radius:var(--radius-sm);background:var(--accent);
-    display:flex;align-items:center;justify-content:center;color:var(--paper);
-    font-family:Georgia,serif; font-weight:700; font-size:.9rem; flex:none;
-  }
   .tabs{ display:flex; gap:4px; flex:1; }
   .tab-btn{
+    display:inline-flex; align-items:center; gap:8px;
     font:inherit; font-size:.85rem; font-weight:600; padding:9px 18px; border:none; border-radius:var(--radius-sm);
     background:transparent; color:var(--ink-soft); cursor:pointer;
   }
@@ -468,11 +459,19 @@
 <div id="appRoot" style="display:none;">
 
   <header class="topbar">
-    <div class="brand"><span class="mark">C</span> Cotizador</div>
     <nav class="tabs">
-      <button class="tab-btn active" id="tabBtnQuote" type="button">Cotización</button>
-      <button class="tab-btn" id="tabBtnAdmin" type="button">Administración</button>
-      <button class="tab-btn" id="tabBtnStats" type="button">Estadísticas</button>
+      <button class="tab-btn active" id="tabBtnQuote" type="button">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span>
+        Cotización
+      </button>
+      <button class="tab-btn" id="tabBtnAdmin" type="button">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="2" y1="14" x2="6" y2="14"/><line x1="10" y1="8" x2="14" y2="8"/><line x1="18" y1="16" x2="22" y2="16"/></svg></span>
+        Administración
+      </button>
+      <button class="tab-btn" id="tabBtnStats" type="button">
+        <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></span>
+        Estadísticas
+      </button>
     </nav>
     <div class="user-box">
       <span class="who"><strong id="currentUserName">—</strong><span id="currentUserRole"></span></span>
