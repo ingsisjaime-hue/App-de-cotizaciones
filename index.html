@@ -121,6 +121,17 @@
   .field input:disabled, .field textarea:disabled, .field select:disabled{
     opacity:.55; cursor:not-allowed;
   }
+  .input-with-icon{ position:relative; }
+  .input-with-icon input{ width:100%; padding-right:34px; }
+  .input-icon-btn{
+    position:absolute; top:50%; right:5px; transform:translateY(-50%);
+    width:26px; height:26px; border:none; border-radius:var(--radius-sm);
+    background:transparent; color:var(--ink-soft); cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .input-icon-btn svg{ width:15px; height:15px; }
+  .input-icon-btn:hover{ background:var(--gold-soft); color:var(--accent-ink); }
+  .input-icon-btn:disabled{ opacity:.4; cursor:not-allowed; }
   .logo-row{ display:flex; align-items:center; gap:10px; }
   .logo-preview{
     height:52px;min-width:52px;max-width:120px;border-radius:var(--radius-md);border:1px dashed var(--line);
@@ -538,11 +549,16 @@
 
             <div>
               <p class="section-title">Cliente</p>
-              <div class="toolbar" style="max-width:220px; margin:10px 0 2px;">
-                <button class="btn small ghost" type="button" id="btnPickClient"><span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span> Buscar cliente</button>
-              </div>
-              <div class="client-grid" style="margin-top:10px;">
-                <div class="field"><label>Nombre del cliente</label><input id="clName" placeholder="Razón social / nombre"></div>
+              <div class="client-grid" style="margin-top:12px;">
+                <div class="field">
+                  <label>Nombre del cliente</label>
+                  <div class="input-with-icon">
+                    <input id="clName" placeholder="Razón social / nombre">
+                    <button type="button" id="btnPickClient" class="input-icon-btn" title="Buscar cliente guardado">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    </button>
+                  </div>
+                </div>
                 <div class="field"><label>NIT / C.C.</label><input id="clNit" placeholder="000.000.000-0"></div>
                 <div class="field"><label>Gerente / Responsable</label><input id="clManager" placeholder="Nombre del contacto"></div>
                 <div class="field"><label>Teléfono</label><input id="clPhone" placeholder="+57 300 0000000"></div>
