@@ -531,7 +531,7 @@
 
           <h2>Consultar cotizaciones</h2>
           <div class="field">
-            <input type="text" id="quoteSearchText" placeholder="Buscar por nombre o NIT…">
+            <input type="text" id="quoteSearchText" placeholder="Buscar por nombre, NIT o proyecto…">
           </div>
           <div class="toolbar" style="margin-bottom:10px;">
             <button class="btn small" id="btnSearchQuotes">Buscar</button>
@@ -1684,7 +1684,7 @@
     var textQuery = (quoteSearchTextEl.value||"").trim();
     if(textQuery){
       var term = encodeURIComponent(ilikeTerm(textQuery));
-      path += '&or=(client-%3E%3Ename.ilike.'+term+',client-%3E%3Enit.ilike.'+term+')';
+      path += '&or=(client-%3E%3Ename.ilike.'+term+',client-%3E%3Enit.ilike.'+term+',project.ilike.'+term+')';
     }
     return await sb(path);
   }
