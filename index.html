@@ -1531,7 +1531,7 @@
     }
     function hr(){ var h = document.createElement('hr'); totalsBox.appendChild(h); }
 
-    line('Subtotal', sub);
+    line('<strong>Subtotal</strong>', sub);
 
     if(state.mode === 'iva'){
       var pctDiv = document.createElement('div');
@@ -1566,7 +1566,7 @@
       });
       var aiuTotal = sub * ((state.aiu.a + state.aiu.i + state.aiu.u)/100);
       hr();
-      line('AIU', aiuTotal);
+      line('<strong>AIU</strong>', aiuTotal);
       var baseIva = sub + aiuTotal;
       line('Subtotal + AIU', baseIva);
 
@@ -1603,14 +1603,14 @@
     }
     if(state.mode === 'iva'){
       var ivaVal = sub*(state.ivaPercent/100);
-      totalsHtml = lineHtml('Subtotal', sub) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
+      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
         + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true);
     } else {
       var aiuTotal = sub*((state.aiu.a+state.aiu.i+state.aiu.u)/100);
       var baseIva = sub+aiuTotal;
       var utilidadVal = sub*(state.aiu.u/100);
       var ivaOnAiu = utilidadVal*(state.aiuIvaPercent/100);
-      totalsHtml = lineHtml('Subtotal', sub) + lineHtml('AIU', aiuTotal) + lineHtml('Subtotal + AIU', baseIva)
+      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub) + lineHtml('<strong>AIU</strong>', aiuTotal) + lineHtml('Subtotal + AIU', baseIva)
         + lineHtml('IVA sobre utilidad ('+state.aiuIvaPercent+'%)', ivaOnAiu)
         + '<hr>' + lineHtml('<strong>Total a pagar</strong>', baseIva+ivaOnAiu, true);
     }
