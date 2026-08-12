@@ -1,4 +1,5 @@
 <title>Cotizador</title>
+<script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root{
     --ink:#1c2b2a;
@@ -1744,46 +1745,66 @@
     });
   }
 
-  // ---------- Exportar cotizaciones a Excel ----------
-  function csvEscape(v){
-    var s = (v==null?'':String(v));
-    if(/[";\n]/.test(s)) s = '"' + s.replace(/"/g,'""') + '"';
-    return s;
-  }
-  function buildQuotesCsv(quotes){
-    var headers = ['Número','Fecha','Cliente','NIT','Proyecto','Forma de pago','Plazo (días)','Valor total'];
-    var lines = [headers.map(csvEscape).join(';')];
-    quotes.forEach(function(q){
-      var row = [
+  // ---------- Exportar cotizaciones a Excel (.xlsx real, vía SheetJS) ----------
+  function buildQuotesSummaryRows(quotes){
+    var headers = ['Número','Fecha','Válida hasta','Cliente','NIT','Responsable','Teléfono','Proyecto','Forma de pago','Plazo (días)','Valor total'];
+    var rows = quotes.map(function(q){
+      return [
         q.number || '',
         q.quote_date ? formatDate(q.quote_date) : '',
+        q.valid_until ? formatDate(q.valid_until) : '',
         (q.client && q.client.name) || '',
         (q.client && q.client.nit) || '',
+        (q.client && q.client.manager) || '',
+        (q.client && q.client.phone) || '',
         q.project || '',
         q.payment_method || '',
         q.payment_term || '',
         Math.round(computeQuoteTotal(q))
       ];
-      lines.push(row.map(csvEscape).join(';'));
     });
-    return lines.join('\r\n');
+    return [headers].concat(rows);
   }
-  function downloadTextFile(filename, content, mime){
-    var blob = new Blob(['﻿' + content], {type: mime});
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  function buildQuotesItemsRows(quotes){
+    var headers = ['Número de cotización','Fecha','Cliente','Descripción','Unidad','Cantidad','Valor unitario','Valor total ítem'];
+    var rows = [];
+    quotes.forEach(function(q){
+      (q.items||[]).forEach(function(it){
+        rows.push([
+          q.number || '',
+          q.quote_date ? formatDate(q.quote_date) : '',
+          (q.client && q.client.name) || '',
+          it.desc || '',
+          it.unit || '',
+          it.qty || 0,
+          it.price || 0,
+          (it.qty||0) * (it.price||0)
+        ]);
+      });
+    });
+    return [headers].concat(rows);
   }
   document.getElementById('btnExportExcel').addEventListener('click', async function(){
     var btn = this;
     btn.disabled = true;
     try{
+      if(typeof XLSX === 'undefined'){
+        throw new Error('No se pudo cargar el módulo de Excel. Revisa tu conexión a internet e inténtalo de nuevo.');
+      }
       var quotes = await fetchQuotes();
       if(!quotes.length){ alert('No hay cotizaciones para exportar con la búsqueda actual.'); return; }
-      var csv = buildQuotesCsv(quotes);
-      downloadTextFile('cotizaciones_'+todayISO()+'.csv', csv, 'text/csv;charset=utf-8;');
+
+      var wb = XLSX.utils.book_new();
+
+      var wsSummary = XLSX.utils.aoa_to_sheet(buildQuotesSummaryRows(quotes));
+      wsSummary['!cols'] = [{wch:12},{wch:12},{wch:12},{wch:28},{wch:16},{wch:22},{wch:14},{wch:28},{wch:14},{wch:10},{wch:16}];
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Cotizaciones');
+
+      var wsItems = XLSX.utils.aoa_to_sheet(buildQuotesItemsRows(quotes));
+      wsItems['!cols'] = [{wch:16},{wch:12},{wch:28},{wch:36},{wch:10},{wch:10},{wch:14},{wch:16}];
+      XLSX.utils.book_append_sheet(wb, wsItems, 'Ítems');
+
+      XLSX.writeFile(wb, 'cotizaciones_'+todayISO()+'.xlsx');
     }catch(e){
       alert('No se pudo exportar: ' + e.message);
     }finally{
