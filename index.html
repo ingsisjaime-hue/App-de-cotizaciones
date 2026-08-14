@@ -449,7 +449,7 @@
   .closing{ display:flex; flex-direction:column; gap:10px; font-size:.85rem; color:var(--ink); line-height:1.55; }
   .closing p{ margin:0; }
   .signature-block{ margin-top:8px; }
-  .signature-block .signoff{ margin-bottom:40px; }
+  .signature-img{ height:56px; display:block; margin:8px 0 2px; }
   .signer-name{
     font-weight:700; letter-spacing:.02em; border-top:1px solid var(--line);
     padding-top:6px; display:inline-block; min-width:260px;
@@ -671,6 +671,7 @@
               <p>En espera que nuestra cotización sea de su entera satisfacción y poder atender sus necesidades.</p>
               <div class="signature-block">
                 <p class="signoff">Cordialmente,</p>
+                <img class="signature-img" id="signatureImg" alt="Firma" style="display:none;">
                 <p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p>
                 <p class="signer-role">Gerente</p>
               </div>
@@ -696,6 +697,13 @@
             <div class="logo-row">
               <div class="logo-preview" id="logoPreview">—</div>
               <input type="file" id="logoInput" accept="image/*" style="font-size:.72rem;">
+            </div>
+          </div>
+          <div class="field">
+            <label>Firma del gerente</label>
+            <div class="logo-row">
+              <div class="logo-preview" id="signaturePreview">—</div>
+              <input type="file" id="signatureInput" accept="image/*" style="font-size:.72rem;">
             </div>
           </div>
           <div class="row2">
@@ -1074,7 +1082,7 @@
     CAN.usersView = can('users','view');
     CAN.usersEdit = can('users','edit');
 
-    [coName,coNit,coAddress,coPhone,coEmail,logoInput].forEach(function(el){ el.disabled = !CAN.companyEdit; });
+    [coName,coNit,coAddress,coPhone,coEmail,logoInput,signatureInput].forEach(function(el){ el.disabled = !CAN.companyEdit; });
     document.getElementById('btnNewClient').style.display = CAN.clientCreate ? '' : 'none';
     document.getElementById('btnNew').style.display = can('quotes','create') ? '' : 'none';
     document.getElementById('btnDeleteQuote').style.display = can('quotes','delete') ? '' : 'none';
@@ -1123,7 +1131,7 @@
   document.getElementById('tabBtnStats').addEventListener('click', function(){ showTab('stats'); });
 
   // ---------- Company ----------
-  var company = {name:"", nit:"", address:"", phone:"", email:"", logo:""};
+  var company = {name:"", nit:"", address:"", phone:"", email:"", logo:"", signature:""};
 
   var coName = document.getElementById('coName');
   var coNit = document.getElementById('coNit');
@@ -1133,6 +1141,9 @@
   var logoInput = document.getElementById('logoInput');
   var logoPreview = document.getElementById('logoPreview');
   var docLogo = document.getElementById('docLogo');
+  var signatureInput = document.getElementById('signatureInput');
+  var signaturePreview = document.getElementById('signaturePreview');
+  var signatureImg = document.getElementById('signatureImg');
 
   function renderCompany(){
     coName.value = company.name; coNit.value = company.nit; coAddress.value = company.address;
@@ -1149,6 +1160,14 @@
       logoPreview.classList.remove('has-logo');
       docLogo.classList.remove('has-logo');
     }
+    if(company.signature){
+      signaturePreview.innerHTML = '<img src="'+company.signature+'" alt="Firma">';
+      signatureImg.src = company.signature;
+      signatureImg.style.display = '';
+    } else {
+      signaturePreview.textContent = '—';
+      signatureImg.style.display = 'none';
+    }
     document.getElementById('viewCoName').textContent = company.name || "Nombre de la empresa";
     document.getElementById('viewCoAddress').textContent = company.address || "Dirección de la empresa";
     document.getElementById('viewCoNit').textContent = company.nit ? ("NIT " + company.nit) : "NIT";
@@ -1160,7 +1179,7 @@
     var rows = await sb('/company_settings?id=eq.1&select=*');
     var row = rows && rows[0];
     if(row){
-      company = { name:row.name||"", nit:row.nit||"", address:row.address||"", phone:row.phone||"", email:row.email||"", logo: row.logo_data_url || "" };
+      company = { name:row.name||"", nit:row.nit||"", address:row.address||"", phone:row.phone||"", email:row.email||"", logo: row.logo_data_url || "", signature: row.signature_data_url || "" };
     }
     renderCompany();
   }
@@ -1168,7 +1187,7 @@
   async function saveCompanyField(field, value){
     company[field] = value;
     renderCompany();
-    var colMap = {name:'name', nit:'nit', address:'address', phone:'phone', email:'email', logo:'logo_data_url'};
+    var colMap = {name:'name', nit:'nit', address:'address', phone:'phone', email:'email', logo:'logo_data_url', signature:'signature_data_url'};
     var payload = {}; payload[colMap[field]] = value; payload.updated_at = new Date().toISOString();
     try{ await sb('/company_settings?id=eq.1', {method:'PATCH', body: JSON.stringify(payload)}); }
     catch(e){ alert('No se pudo guardar el dato de la empresa: ' + e.message); }
@@ -1181,6 +1200,13 @@
     if(!file) return;
     var reader = new FileReader();
     reader.onload = function(){ saveCompanyField('logo', reader.result); };
+    reader.readAsDataURL(file);
+  });
+  signatureInput.addEventListener('change', function(){
+    var file = signatureInput.files && signatureInput.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){ saveCompanyField('signature', reader.result); };
     reader.readAsDataURL(file);
   });
 
@@ -1675,7 +1701,9 @@
       + '<div class="closing">'
       +   '<p>Este proyecto se ejecutará con toda la indumentaria de protección personal de salud y bioseguridad.</p>'
       +   '<p>En espera que nuestra cotización sea de su entera satisfacción y poder atender sus necesidades.</p>'
-      +   '<div class="signature-block"><p class="signoff">Cordialmente,</p><p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p><p class="signer-role">Gerente</p></div>'
+      +   '<div class="signature-block"><p class="signoff">Cordialmente,</p>'
+      +     (company.signature ? '<img class="signature-img" src="'+company.signature+'" alt="Firma">' : '')
+      +     '<p class="signer-name">JAIME ENRIQUE DAZA RODRIGUEZ</p><p class="signer-role">Gerente</p></div>'
       + '</div>';
   }
 
