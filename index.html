@@ -1714,9 +1714,21 @@
   document.getElementById('btnClosePreview').addEventListener('click', function(){
     document.getElementById('previewOverlay').classList.remove('open');
   });
+  function sanitizeFilename(s){
+    return String(s||'').replace(/[\\/:*?"<>|]/g, '-').trim();
+  }
   function printQuote(){
     document.getElementById('printTarget').innerHTML = buildPreviewMarkup();
+    var project = sanitizeFilename(state.project);
+    var originalTitle = document.title;
+    document.title = 'Cotización' + (project ? ' ' + project : '');
+    function restoreTitle(){
+      document.title = originalTitle;
+      window.removeEventListener('afterprint', restoreTitle);
+    }
+    window.addEventListener('afterprint', restoreTitle);
     window.print();
+    setTimeout(restoreTitle, 30000);
   }
   document.getElementById('btnPrintFromPreview').addEventListener('click', printQuote);
   document.getElementById('previewOverlay').addEventListener('click', function(e){
