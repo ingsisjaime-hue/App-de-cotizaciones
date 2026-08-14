@@ -1607,11 +1607,18 @@
       totalsHtml = lineHtml('<strong>Subtotal</strong>', sub) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
         + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true);
     } else {
-      var aiuTotal = sub*((state.aiu.a+state.aiu.i+state.aiu.u)/100);
-      var baseIva = sub+aiuTotal;
+      var adminVal = sub*(state.aiu.a/100);
+      var imprevVal = sub*(state.aiu.i/100);
       var utilidadVal = sub*(state.aiu.u/100);
+      var aiuTotal = adminVal + imprevVal + utilidadVal;
+      var baseIva = sub+aiuTotal;
       var ivaOnAiu = utilidadVal*(state.aiuIvaPercent/100);
-      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub) + lineHtml('<strong>AIU</strong>', aiuTotal) + lineHtml('Subtotal + AIU', baseIva)
+      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub)
+        + lineHtml('Administración ('+state.aiu.a+'%)', adminVal)
+        + lineHtml('Imprevistos ('+state.aiu.i+'%)', imprevVal)
+        + lineHtml('Utilidad ('+state.aiu.u+'%)', utilidadVal)
+        + lineHtml('<strong>AIU</strong>', aiuTotal)
+        + lineHtml('Subtotal + AIU', baseIva)
         + lineHtml('IVA sobre utilidad ('+state.aiuIvaPercent+'%)', ivaOnAiu)
         + '<hr>' + lineHtml('<strong>Total a pagar</strong>', baseIva+ivaOnAiu, true);
     }
@@ -1649,8 +1656,8 @@
       +   'Proyecto: '+escapeHtml(state.project||'—')
       + '</div></div>'
       + '<div><p class="section-title">Ítems</p><table class="items" style="margin-top:10px;">'
-      +   '<thead><tr><th style="width:28px;">#</th><th>Descripción</th><th style="width:70px;">Unidad</th>'
-      +   '<th class="num" style="width:60px;">Cant.</th><th class="num" style="width:110px;">Valor unit.</th><th class="num" style="width:110px;">Valor total</th></tr></thead>'
+      +   '<thead><tr><th style="width:20px;">#</th><th>Descripción</th><th style="width:52px;">Unidad</th>'
+      +   '<th class="num" style="width:46px;">Cant.</th><th class="num" style="width:92px;">Valor unit.</th><th class="num" style="width:92px;">Valor total</th></tr></thead>'
       +   '<tbody>'+itemsRows+'</tbody></table></div>'
       + '<div class="totals-wrap"><div class="totals">'+totalsHtml+'</div></div>'
       + '<div style="font-size:.85rem;"><p class="section-title">Condiciones de pago</p><p style="margin-top:10px;">'
