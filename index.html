@@ -392,6 +392,11 @@
     text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.06em;
     color:var(--ink-soft); border-bottom:1px solid var(--line); padding:6px 8px; font-weight:600;
   }
+  /* En Vista previa e Imprimir/PDF los encabezados de la tabla de ítems
+     usan el mismo color y peso que el texto de "Total a pagar". */
+  #previewSheet table.items th, #printTarget table.items th{
+    color:var(--accent-ink); font-weight:700;
+  }
   table.items td{
     border-bottom:1px solid var(--line); padding:5px 6px; vertical-align:middle;
   }
@@ -1525,14 +1530,16 @@
       var div = document.createElement('div');
       div.className = 'line' + (opts.grand ? ' grand' : '');
       var lab = document.createElement('span'); lab.innerHTML = labelHtml;
-      var amt = document.createElement('span'); amt.className = 'amt'; amt.textContent = fmt.format(amount);
+      var amt = document.createElement('span'); amt.className = 'amt';
+      var amtText = fmt.format(amount);
+      amt.innerHTML = opts.boldAmt ? ('<strong>'+amtText+'</strong>') : amtText;
       div.appendChild(lab); div.appendChild(amt);
       totalsBox.appendChild(div);
       return div;
     }
     function hr(){ var h = document.createElement('hr'); totalsBox.appendChild(h); }
 
-    line('<strong>Subtotal</strong>', sub);
+    line('<strong>Subtotal</strong>', sub, {boldAmt:true});
 
     if(state.mode === 'iva'){
       var pctDiv = document.createElement('div');
@@ -1599,12 +1606,14 @@
     var sub = subtotal();
     var totalsHtml;
 
-    function lineHtml(label, amount, grand){
-      return '<div class="line'+(grand?' grand':'')+'"><span>'+label+'</span><span class="amt">'+fmt.format(amount)+'</span></div>';
+    function lineHtml(label, amount, grand, boldAmt){
+      var amtText = fmt.format(amount);
+      if(boldAmt) amtText = '<strong>'+amtText+'</strong>';
+      return '<div class="line'+(grand?' grand':'')+'"><span>'+label+'</span><span class="amt">'+amtText+'</span></div>';
     }
     if(state.mode === 'iva'){
       var ivaVal = sub*(state.ivaPercent/100);
-      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
+      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub, false, true) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
         + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true);
     } else {
       var adminVal = sub*(state.aiu.a/100);
@@ -1613,7 +1622,7 @@
       var aiuTotal = adminVal + imprevVal + utilidadVal;
       var baseIva = sub+aiuTotal;
       var ivaOnAiu = utilidadVal*(state.aiuIvaPercent/100);
-      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub)
+      totalsHtml = lineHtml('<strong>Subtotal</strong>', sub, false, true)
         + lineHtml('Administración ('+state.aiu.a+'%)', adminVal)
         + lineHtml('Imprevistos ('+state.aiu.i+'%)', imprevVal)
         + lineHtml('Utilidad ('+state.aiu.u+'%)', utilidadVal)
