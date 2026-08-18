@@ -905,6 +905,7 @@
   var SESSION_KEY = "cotizador_session_v1";
 
   var fmt = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', maximumFractionDigits:0});
+  var fmt2 = new Intl.NumberFormat('es-CO', {style:'currency', currency:'COP', minimumFractionDigits:2, maximumFractionDigits:2});
   var UNIT_OPTIONS = [
     {value:"m", label:"m"},
     {value:"m³", label:"m³"},
@@ -1557,7 +1558,7 @@
       div.className = 'line' + (opts.grand ? ' grand' : '');
       var lab = document.createElement('span'); lab.innerHTML = labelHtml;
       var amt = document.createElement('span'); amt.className = 'amt';
-      var amtText = fmt.format(amount);
+      var amtText = (opts.decimals2 ? fmt2 : fmt).format(amount);
       amt.innerHTML = opts.boldAmt ? ('<strong>'+amtText+'</strong>') : amtText;
       div.appendChild(lab); div.appendChild(amt);
       totalsBox.appendChild(div);
@@ -1581,7 +1582,7 @@
         state.ivaPercent = parseFloat(e.target.value)||0; renderTotals();
       });
       hr();
-      line('<strong>Total a pagar</strong>', sub + ivaVal, {grand:true});
+      line('<strong>Total a pagar</strong>', sub + ivaVal, {grand:true, decimals2:true});
     } else {
       ['a','i','u'].forEach(function(k){
         var labels = {a:'Administración', i:'Imprevistos', u:'Utilidad'};
@@ -1623,7 +1624,7 @@
       totalsBox.appendChild(note);
 
       hr();
-      line('<strong>Total a pagar</strong>', baseIva + ivaOnAiu, {grand:true});
+      line('<strong>Total a pagar</strong>', baseIva + ivaOnAiu, {grand:true, decimals2:true});
     }
   }
 
@@ -1632,15 +1633,15 @@
     var sub = subtotal();
     var totalsHtml;
 
-    function lineHtml(label, amount, grand, boldAmt){
-      var amtText = fmt.format(amount);
+    function lineHtml(label, amount, grand, boldAmt, decimals2){
+      var amtText = (decimals2 ? fmt2 : fmt).format(amount);
       if(boldAmt) amtText = '<strong>'+amtText+'</strong>';
       return '<div class="line'+(grand?' grand':'')+'"><span>'+label+'</span><span class="amt">'+amtText+'</span></div>';
     }
     if(state.mode === 'iva'){
       var ivaVal = sub*(state.ivaPercent/100);
       totalsHtml = lineHtml('<strong>Subtotal</strong>', sub, false, true) + lineHtml('IVA ('+state.ivaPercent+'%)', ivaVal)
-        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true);
+        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', sub+ivaVal, true, false, true);
     } else {
       var adminVal = sub*(state.aiu.a/100);
       var imprevVal = sub*(state.aiu.i/100);
@@ -1655,7 +1656,7 @@
         + lineHtml('<strong>AIU</strong>', aiuTotal)
         + lineHtml('Subtotal + AIU', baseIva)
         + lineHtml('IVA sobre utilidad ('+state.aiuIvaPercent+'%)', ivaOnAiu)
-        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', baseIva+ivaOnAiu, true);
+        + '<hr>' + lineHtml('<strong>Total a pagar</strong>', baseIva+ivaOnAiu, true, false, true);
     }
 
     var itemsRows = state.items.map(function(it, i){
