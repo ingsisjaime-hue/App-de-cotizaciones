@@ -7,7 +7,7 @@ Aplicación web para generar cotizaciones con modalidad **IVA** o **AIU**, con i
 - **Autenticación**: inicio de sesión con correo y contraseña (Supabase Auth). Sin registro público — los usuarios los crea un administrador.
 - **Roles y permisos granulares**: cada rol define, por módulo (Clientes, Cotizaciones, Empresa, Usuarios), qué puede ver, crear, editar o eliminar. Los permisos se aplican tanto en la interfaz como en la base de datos (Row Level Security), y son editables desde la app (panel "Usuarios y roles", visible para quien tenga permiso de ver usuarios).
 - **Administración de usuarios**: un administrador puede crear usuarios nuevos, cambiarles el rol y activarlos/desactivarlos, todo desde la app.
-- Consecutivo automático de cotización (año-número), asignado atómicamente en la base de datos solo al guardar.
+- Consecutivo automático de cotización (formato año-número, ej. 2026-0223), asignado atómicamente en la base de datos solo al guardar. La secuencia numérica es continua y global (no reinicia al cambiar de año); solo el año que se muestra en el número cambia según la fecha.
 - Datos de la empresa y logo, compartidos entre todos los usuarios.
 - Directorio de clientes compartido: crear, buscar, editar y eliminar, con selección rápida para la cotización.
 - Modalidad **Con IVA** o **Con AIU** (IVA calculado sobre la utilidad).
